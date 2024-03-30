@@ -1,0 +1,63 @@
+.JGW {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  /* 创建5列，每列占据相同的空间 */
+  grid-gap: 9q;
+
+  @media screen and (max-width:640px) {
+    grid-template-columns: repeat(1, 1fr);
+
+    > div > span {
+      font-size: 2cm !important;
+    }
+  }
+
+  /* 可选：设置网格线之间的间隙 */
+  > div {
+    min-width: max-content;
+    border: solid;
+    padding: 9q;
+    // margin: 9q;
+    text-align: center;
+
+    &:link,
+    &:active,
+    &:hover,
+    &:visited,
+    &:focus {
+      background-color: #eee;
+      color: red;
+      border-color: tan;
+      font-weight: 900;
+      transform: scale(1.1);
+      box-shadow: 0 0 9q;
+      text-shadow: 0 0 1q;
+      animation: k 99s infinite;
+
+      // font-style: italic;
+      @keyframes k {
+        0% {
+          filter: hue-rotate(0deg);
+        }
+
+        to {
+          filter: hue-rotate(360deg);
+        }
+      }
+    }
+
+    > span {
+      font-size: 3vw;
+
+      &:nth-child(2) {
+        @font-face {
+          font-family: "Oracle";
+          src: url('/assets/jgw.woff') format('truetype');
+        }
+
+        font-size: 5vw;
+        font-family: "Oracle";
+      }
+    }
+  }
+}

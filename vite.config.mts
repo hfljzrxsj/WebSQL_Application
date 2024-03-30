@@ -248,17 +248,17 @@ export default defineConfig({
         // },
       ]
     }),
-    legacy({
-      // targets: ['chrome < 60', 'edge < 15'],
-      // polyfills: ['es.promise.finally', 'es/map', 'es/set'],
-      // modernPolyfills: ['es.promise.finally'],
-      // renderLegacyChunks: true,
-      // polyfills: ['es.global-this'],
-      // renderLegacyChunks: false,
-      targets: ['Android >= 11', 'Chrome >= 83'],
-      modernPolyfills: true,
-      externalSystemJS: true
-    }),
+    // legacy({
+    //   // targets: ['chrome < 60', 'edge < 15'],
+    //   // polyfills: ['es.promise.finally', 'es/map', 'es/set'],
+    //   // modernPolyfills: ['es.promise.finally'],
+    //   // renderLegacyChunks: true,
+    //   // polyfills: ['es.global-this'],
+    //   // renderLegacyChunks: false,
+    //   targets: ['Android >= 11', 'Chrome >= 83'],
+    //   modernPolyfills: true,
+    //   externalSystemJS: true
+    // }),
     // {
     //   name: 'treat-js-files-as-jsx',
     //   async transform (code, id) {
@@ -370,7 +370,9 @@ export default defineConfig({
           //     return 'id_node_modules';
           //   }
           // }
-        }
+        },
+        hoistTransitiveImports: true,
+        // preserveModules: true,
       },
       plugins: [
         // commonjs()

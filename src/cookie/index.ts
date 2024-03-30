@@ -7,15 +7,16 @@ console.log({ parse, serialize },
   { set, get, remove, getJSON, noConflict, withConverter },
   { parseDate, formatDate, canonicalDomain, domainMatch, defaultPath, pathMatch, tough_cookie_parse, fromJSON, getPublicSuffix, cookieCompare, permuteDomain, permutePath },);
 (() => {
-  let cookies = parse('foo=bar; equation=E%3Dmc%5E2');
-  console.log(cookies['foo']); // bar
-  console.log(cookies['equation']); // E=mc^2
-  console.log(parse(document.cookie));
+  // let cookies = parse('foo=bar; equation=E%3Dmc%5E2');
+  // console.log(cookies['foo']); // bar
+  // console.log(cookies['equation']); // E=mc^2
 
   // To serialize a cookie into a string:
-  let setCookie = serialize('foo', 'bar', { httpOnly: true });
-  console.log(setCookie); // foo=bar; HttpOnly
+  let setCookie = serialize('hjx', 'hjxs', { expires: new Date(new Date().getTime() * 1.5) });
+  // console.log(setCookie); // foo=bar; HttpOnly
   document.cookie = setCookie;
+  document.cookie = serialize('hjxssss', 'hjxs', { expires: new Date(new Date().getTime() * 1.5) });
+  console.log(parse(document.cookie));
 })();
 // (() => {
 //   let signedValue = sign('hello', 'secret');
@@ -26,41 +27,42 @@ console.log({ parse, serialize },
 //   console.log(originalValue); // hello
 // })();
 (() => {
-  set('foo', 'bar');
+  const k = `${new Date().getTime()}`;
+  set(k, 'bar', { expires: new Date(new Date().getTime() * 1.5) });
   // To get a cookie:
-  let foo = get('foo');
+  let foo = get(k);
   console.log(foo); // bar
   // To remove a cookie:
-  remove('foo');
+  remove(k);
 })();
 (() => {
 
   // parseDate
-  let date = parseDate('Wed, 13-Jan-2021 22:23:01 GMT');
-  console.log(date); // Outputs the date object
+  // let date = parseDate('Wed, 13-Jan-2021 22:23:01 GMT');
+  // console.log(new Date(), date); // Outputs the date object
 
-  // formatDate
-  let dateString = formatDate(new Date());
-  console.log(dateString); // Outputs the date string in HTTP header format
+  // // formatDate
+  // let dateString = formatDate(new Date());
+  // console.log(dateString); // Outputs the date string in HTTP header format
 
-  // canonicalDomain
-  let canonical = canonicalDomain('www.example.com');
-  console.log(canonical); // Outputs: example.com
+  // // canonicalDomain
+  // let canonical = canonicalDomain('www.example.com');
+  // console.log(canonical); // Outputs: example.com
 
-  // domainMatch
-  let match = domainMatch('www.example.com', 'example.com');
-  console.log(match); // Outputs: true
+  // // domainMatch
+  // let match = domainMatch('www.example.com', 'example.com');
+  // console.log(match); // Outputs: true
 
-  // defaultPath
-  let defaultPaths = defaultPath('/some/path');
-  console.log(defaultPaths); // Outputs: /some
+  // // defaultPath
+  // let defaultPaths = defaultPath('/some/path');
+  // console.log(defaultPaths); // Outputs: /some
 
-  // pathMatch
-  let pathMatchs = pathMatch('/some/path', '/some');
-  console.log(pathMatchs); // Outputs: true
+  // // pathMatch
+  // let pathMatchs = pathMatch('/some/path', '/some');
+  // console.log(pathMatchs); // Outputs: true
 
   // parse (as tough_cookie_parse)
-  let cookie = tough_cookie_parse('foo=bar; Domain=example.com; Path=/');
+  let cookie = tough_cookie_parse(document.cookie);
   console.log(cookie);
 
   // fromJSON

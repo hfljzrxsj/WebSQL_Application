@@ -1,0 +1,33 @@
+.div {
+  position: relative;
+  width: 400px;
+  height: 400px;
+  overflow: hidden;
+  border: solid;
+  box-sizing: border-box;
+  margin: auto;
+
+  > canvas {
+    // width: 400px;
+    // height: 400px;
+    width: 100%;
+    height: 100%;
+    border: solid;
+    transition: none;
+  }
+}
+
+.map {
+  width: 100vmin;
+  height: 100vmin;
+
+  &,
+  * {
+    transition: none;
+  }
+}
+
+.canvas {
+  border: solid;
+  transition: none;
+}

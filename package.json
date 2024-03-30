@@ -17,7 +17,10 @@
     "vscode-chrome-debug-core": "6.8.9",
     "vscode-debugadapter": "1.40.0",
     "vue-i18n": "8.27.0",
-    "xml-manifest-decoder": "1.0.6"
+    "xml-manifest-decoder": "1.0.6",
+    "sql.js": "^1.8.0",
+    "sqlite3": "^5.1.6",
+    "sqlstring": "^2.3.3"
   },
   "dependenciesAll": {
     "@aashutoshrathi/word-wrap": "1.2.6",
@@ -959,6 +962,7 @@
     "@types/source-map": "0.1.29",
     "@types/spdy": "3.4.5",
     "@types/sprintf-js": "1.1.2",
+    "@types/sql.js": "1.4.9",
     "@types/ssri": "7.1.1",
     "@types/stack-utils": "2.0.1",
     "@types/statuses": "2.0.1",

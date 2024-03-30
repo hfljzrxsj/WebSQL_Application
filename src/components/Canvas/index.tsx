@@ -1,23 +1,25 @@
-import { StrictMode, useEffect, useRef, useState } from "react";
-
+import { StrictMode, useEffect, useRef } from "react";
+import style from './_index.module.scss';
+import panzoom from 'panzoom';
 
 const gridSize = 50; // 每个格子50x50像素  
 const numRows = 8;
 const numCols = 8;
 
-
+const canvasWH = 400;
 export default function Canvas () {
-  const [value, setValue] = useState('');
-  const ref = useRef<HTMLCanvasElement>(null);
+  const ref = useRef<HTMLCanvasElement>(document.createElement('canvas'));
   // 获取canvas元素和绘图上下文  
-  const { current } = ref;
   useEffect(() => {
-    setValue(' ');
     setTimeout(() => {
+      const { current } = ref;
       if (!current) {
         return;
       }
-      const ctx = current.getContext('2d');
+      const canvas = ref.current ?? document.createElement('canvas');
+      canvas.width = canvas.height = 400;
+      const ctx = canvas.getContext('2d');
+      // const ctx = current.getContext('2d');
       if (!ctx) {
         return;
       }
@@ -43,9 +45,22 @@ export default function Canvas () {
           ctx.fillRect(cellX, cellY, gridSize, gridSize);
         }
       }
+      panzoom(current, {
+        bounds: true,
+        boundsPadding: 0,
+        minZoom: 1,
+        autocenter: true,
+        smoothScroll: true,
+        enableTextSelection: true,
+        disableKeyboardInteraction: false
+      });
+      // instance.on('zoomend', function (_e) {
+      //   if (instance.getTransform().scale === 1) {
+      //     current.removeAttribute('style');
+      //   }
+      // });
     });
-  }, [current, ref, value]);
-
+  }, [ref]);
   // 示例坐标点数组  
   const exampleCoordinates = [
     [1, 1],
@@ -54,47 +69,18 @@ export default function Canvas () {
     // ... 更多坐标点  
   ];
   return <StrictMode>
-    {/* <input
-      // value={value}
-      onChange={(e) => {
-        const { value } = e.target;
-        //#region 
-        if (!current) {
-          return;
-        }
-        const ctx = current.getContext('2d');
-        if (!ctx) {
-          return;
-        }
-        ctx.clearRect(0, 0, current.width, current.height); // 清除整个canvas  
-        ctx.beginPath();
-        ctx.strokeStyle = '#000';
-        for (let i = 0; i <= current.width; i += gridSize) {
-          ctx.moveTo(i, 0);
-          ctx.lineTo(i, current.height);
-        }
-        for (let j = 0; j <= current.height; j += gridSize) {
-          ctx.moveTo(0, j);
-          ctx.lineTo(current.width, j);
-        }
-        ctx.stroke();
-        //#region 
-        for (const [x, y] of exampleCoordinates) {
-          // 确保坐标在合理范围内  
-          if (x !== undefined && y !== undefined && x >= 0 && x < numCols && y >= 0 && y < numRows) {
-            const cellX = x * gridSize;
-            const cellY = y * gridSize;
-            ctx.fillStyle = 'black';
-            ctx.fillRect(cellX, cellY, gridSize, gridSize);
-          }
-        }
-
-        // // 5秒后清空canvas  
-        // setTimeout(() => {
-        //   ctx.clearRect(0, 0, current.width, current.height);
-        // }, 5000);
-      }}
-    /> */}
-    <canvas ref={ref} width="400" height="400" />
+    {/* <TransformWrapper>
+      <TransformComponent> */}
+    {/* <div
+        // className={style['map']}
+        ></div> */}
+    {/* </TransformComponent>
+    </TransformWrapper> */}
+    <div className={style["div"]}>
+      <canvas ref={ref}
+        width={canvasWH} height={canvasWH}
+      // className={style["canvas"]}
+      />
+    </div>
   </StrictMode>;
 }

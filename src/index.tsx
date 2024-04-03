@@ -1,7 +1,7 @@
 import './index.scss';
-import * as React from 'react';
-import App from './App';
 import { render } from 'react-dom';
+import WebSQL from './pages/WebSQL';
+import BasicSelect from './pages/Test/MUISelect';
 // import { register } from './serviceWorkerRegistration';
 // import './mock';
 // import 'virtual:svg-cions-register';
@@ -12,14 +12,19 @@ import { render } from 'react-dom';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
 // createRoot(container).
-render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-  , document.body
-);
+// render(
+//   <StrictMode>
+//     <App />
+//   </StrictMode>
+//   , document.body
+// );
 // register();
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 // reportWebVitals();
+render(
+  <WebSQL />
+  // <BasicSelect />
+  , document.body
+);

@@ -19,7 +19,6 @@ export default () => {
   const matches = useMediaQuery('(orientation:landscape)');
   // const matches = innerWidth >= innerHeight;
 
-  //@ts-expect-error
   return <StrictMode><StyledEngineProvider injectFirst><ScopedCssBaseline><CssBaseline /><Provider store={store}>
     <MediaQueryContext.Provider value={matches}>
       <HashRouter>

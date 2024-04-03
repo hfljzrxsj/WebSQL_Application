@@ -17,10 +17,7 @@
     "vscode-chrome-debug-core": "6.8.9",
     "vscode-debugadapter": "1.40.0",
     "vue-i18n": "8.27.0",
-    "xml-manifest-decoder": "1.0.6",
-    "sql.js": "^1.8.0",
-    "sqlite3": "^5.1.6",
-    "sqlstring": "^2.3.3"
+    "xml-manifest-decoder": "1.0.6"
   },
   "dependenciesAll": {
     "@aashutoshrathi/word-wrap": "1.2.6",

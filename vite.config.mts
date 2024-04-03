@@ -141,31 +141,31 @@ export default defineConfig({
         //   // 'path': 'https://cdn.bootcdn.net/ajax/libs/material-ui/4.12.4/umd/material-ui.development.js'
         //   // 'path': '//unpkg.com/@material-ui/core/umd/material-ui.production.min.js'
         // },
-        {
-          'name': 'redux',
-          'var': 'Redux',
-          'path': '//cdn.bootcdn.net/ajax/libs/redux/4.2.1/redux.min.js'
-        },
-        {
-          'name': 'react-redux',
-          'var': 'ReactRedux',
-          'path': '//cdn.bootcdn.net/ajax/libs/react-redux/8.0.5/react-redux.min.js'
-        },
-        {
-          'name': 'redux-thunk',
-          'var': 'ReduxThunk',
-          'path': '//cdn.bootcdn.net/ajax/libs/redux-thunk/2.4.2/redux-thunk.min.js'
-        },
-        {
-          'name': 'axios',
-          'var': 'axios',
-          'path': '//cdn.bootcdn.net/ajax/libs/axios/1.3.6/axios.min.js'
-        },
-        {
-          'name': 'prop-types',
-          'var': 'PropTypes',
-          'path': '//cdn.bootcdn.net/ajax/libs/prop-types/15.8.1/prop-types.min.js'
-        },
+        // {
+        //   'name': 'redux',
+        //   'var': 'Redux',
+        //   'path': '//cdn.bootcdn.net/ajax/libs/redux/4.2.1/redux.min.js'
+        // },
+        // {
+        //   'name': 'react-redux',
+        //   'var': 'ReactRedux',
+        //   'path': '//cdn.bootcdn.net/ajax/libs/react-redux/8.0.5/react-redux.min.js'
+        // },
+        // {
+        //   'name': 'redux-thunk',
+        //   'var': 'ReduxThunk',
+        //   'path': '//cdn.bootcdn.net/ajax/libs/redux-thunk/2.4.2/redux-thunk.min.js'
+        // },
+        // {
+        //   'name': 'axios',
+        //   'var': 'axios',
+        //   'path': '//cdn.bootcdn.net/ajax/libs/axios/1.3.6/axios.min.js'
+        // },
+        // {
+        //   'name': 'prop-types',
+        //   'var': 'PropTypes',
+        //   'path': '//cdn.bootcdn.net/ajax/libs/prop-types/15.8.1/prop-types.min.js'
+        // },
         {
           'name': 'react-transition-group',
           'var': 'ReactTransitionGroup',
@@ -181,21 +181,21 @@ export default defineConfig({
         //   'var': 'ReactRouterDOM',
         //   'path': '//cdn.bootcdn.net/ajax/libs/react-router-dom/6.15.0/react-router-dom.production.min.js'
         // },
-        {
-          'name': 'uuid',
-          'var': 'uuid',
-          'path': '//cdn.bootcdn.net/ajax/libs/uuid/8.3.2/uuid.min.js'
-        },
+        // {
+        //   'name': 'uuid',
+        //   'var': 'uuid',
+        //   'path': '//cdn.bootcdn.net/ajax/libs/uuid/8.3.2/uuid.min.js'
+        // },
         {
           'name': 'classnames',
           'var': 'classNames',
           'path': '//cdn.bootcdn.net/ajax/libs/classnames/2.3.2/index.min.js'
         },
-        {
-          'name': 'echarts',
-          'var': 'echarts',
-          'path': '//cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js'
-        },
+        // {
+        //   'name': 'echarts',
+        //   'var': 'echarts',
+        //   'path': '//cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js'
+        // },
         // {
         //   'name': 'mockjs',
         //   'var': 'Mock',

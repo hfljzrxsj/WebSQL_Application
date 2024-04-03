@@ -34,7 +34,7 @@ const serverOptions = {
   // 'strictPort': true, // 若端口已被占用则会直接退出
   'proxy': {
     '/api': {
-      target: 'http://121.196.247.3',
+      target: 'http://127.0.0.1',
       'changeOrigin': true,
       'secure': true
       // 'rewrite': (path) => path.replace(/^\/api/u, '')

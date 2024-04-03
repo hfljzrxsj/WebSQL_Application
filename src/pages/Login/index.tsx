@@ -9,6 +9,7 @@ import { LoadingButton } from "@mui/lab";
 import type { snackbarAlertAction } from "@/store/SnackBarRuducer";
 import type { Dispatch } from "redux";
 import { commonUseRequestParams } from "@/App";
+import { documentTitle } from "../Overview";
 
 const commonProps: { readonly className: string, readonly variant: TextFieldVariants; } = { className: style['input'] ?? '', variant: 'outlined' };
 export default function Login () {
@@ -17,13 +18,15 @@ export default function Login () {
   const [value, setValue] = useSetState({
     adminId: '',
     password: '',
-    scode: '',
+    // scode: '',
   });
   const [click, setClick] = useState(false);
-  const { adminId, password, scode } = value;
+  const { adminId, password,
+    // scode
+  } = value;
   const adminIdVavid = /^[A-Z]\d{6}$/.test(adminId);
   const passwordVavid = /^\w{6,20}$/.test(password);
-  const scodeVavid = /^\w{5}$/.test(scode);
+  // const scodeVavid = /^\w{5}$/.test(scode);
   const notVavidSoError = (value = '', vavid = true, valueText = '', vavidText = '') => ({
     ...commonProps, ...(() => {
       if (!click) return {};
@@ -36,13 +39,17 @@ export default function Login () {
   });
   useUpdateEffect(() => {
     setClick(false);
-  }, [adminIdVavid, passwordVavid, scodeVavid]);
-  const [imgBase64, setImgBase64] = useState('');
-  const refreshScope = () => getScode().then(e => setImgBase64(e ?? ''));
-  useEffect(() => {
-    refreshScope();
-  }, []);
-  const { run, loading, } = useRequest(() => (loginAction(value)(dispatch)).then(e => e ? navigate('/') : refreshScope()).catch(console.error), {
+  }, [adminIdVavid, passwordVavid,
+    // scodeVavid
+  ]);
+  // const [imgBase64, setImgBase64] = useState('');
+  // const refreshScope = () => getScode().then(e => setImgBase64(e ?? ''));
+  // useEffect(() => {
+  //   refreshScope();
+  // }, []);
+  const { run, loading, } = useRequest(() => (loginAction(value)(dispatch)).then(e => e && navigate('/')
+    // : refreshScope()
+  ).catch(console.error), {
     ...commonUseRequestParams,
     manual: true,
   });
@@ -50,7 +57,7 @@ export default function Login () {
     <StrictMode>
       <div className={style['loginBody']}>
         <div>
-          <h3>H5终端营销活动监控看板</h3>
+          <h3>{documentTitle}</h3>
           <TextField
             label="账号"
             onChange={e => setValue({
@@ -59,8 +66,16 @@ export default function Login () {
             {...notVavidSoError(adminId, adminIdVavid, '请输入账号', '账号格式不正确')}
             autoFocus
             autocomplete
-            maxlength={7}
-            pattern={/^\d{7}$/}
+          // maxlength={7}
+          // pattern={/^\d{7}$/}
+          // inputProps={
+          //   {
+          //     type: 'number',
+          //     max: 7
+          //   }
+          // }
+          // pattern="[a-z]+"
+          // required
           // type="number"
           />
           <TextField
@@ -73,8 +88,9 @@ export default function Login () {
             maxlength={20}
             autocomplete
             pattern={/^\w{6,20}$/}
+          // required
           />
-          <img src={`data:image/jpeg;base64,${imgBase64}`} alt='No Network' onClick={() => refreshScope()} />
+          {/* <img src={`data:image/jpeg;base64,${imgBase64}`} alt='No Network' onClick={() => refreshScope()} />
           <TextField
             label="验证码"
             onChange={e => setValue({
@@ -84,14 +100,16 @@ export default function Login () {
             maxlength={5}
             autocomplete
             pattern={/^\w{5}$/}
-          />
+          /> */}
           <LoadingButton
             variant="contained"
             size="large"
             loading={loading}
             onClick={() => {
               setClick(true);
-              if (!adminIdVavid || !passwordVavid || !scodeVavid)
+              if (!adminIdVavid || !passwordVavid
+                // || !scodeVavid
+              )
                 return;
               run();
             }}>

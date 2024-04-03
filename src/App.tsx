@@ -1,32 +1,34 @@
-// import { StrictMode } from 'react';
-// import MyRoute from './Route';
-// import { HashRouter } from 'react-router-dom';
-// import { Provider } from 'react-redux';
-// import store from './store';
-// import SnackbarAlert from './components/SnackbarAlert';
-// import { CssBaseline, ScopedCssBaseline, StyledEngineProvider } from '@mui/material';
-// import Canvas from './components/Canvas';
-// import './cookie';
+import { createContext, StrictMode } from 'react';
+import MyRoute from './Route';
+import { HashRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import store from './store';
+import SnackbarAlert from './components/SnackbarAlert';
+import { CssBaseline, ScopedCssBaseline, StyledEngineProvider, useMediaQuery } from '@mui/material';
+import './mock';
 
-import JGW from "./components/JGW";
-
-// import './history';
 export const commonUseRequestParams = {
   loadingDelay: 300,
   throttleWait: 300,
 };
-// export default () =>
-//   //@ts-expect-error
-//   <StrictMode><StyledEngineProvider injectFirst><ScopedCssBaseline><CssBaseline /><Provider store={store}>
-//     <StrictMode>
-//       <HashRouter>
-//         <MyRoute />
-//       </HashRouter>
-//       <SnackbarAlert />
-//     </StrictMode>
-//   </Provider>
-//   </ScopedCssBaseline>
-//   </StyledEngineProvider>
-//   </StrictMode>;
 
-export default () => <JGW />;
+export const MediaQueryContext = createContext(false);
+export default () => {
+  // const theme = useTheme();
+  // console.log(theme.breakpoints.up('lg'), theme.mixins.toolbar);
+  const matches = useMediaQuery('(orientation:landscape)');
+  // const matches = innerWidth >= innerHeight;
+
+  //@ts-expect-error
+  return <StrictMode><StyledEngineProvider injectFirst><ScopedCssBaseline><CssBaseline /><Provider store={store}>
+    <MediaQueryContext.Provider value={matches}>
+      <HashRouter>
+        <MyRoute />
+      </HashRouter>
+      <SnackbarAlert />
+    </MediaQueryContext.Provider>
+  </Provider>
+  </ScopedCssBaseline>
+  </StyledEngineProvider>
+  </StrictMode>;
+};

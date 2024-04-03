@@ -4,6 +4,7 @@ import EchartsElement from "@/components/Echart";
 import { FilterDialogWithBreadcrumbs, type FilterDialogIncludeButtonInstance } from "@/components/FilterDialogWithBreadcrumbs";
 import { useRequest } from "ahooks";
 import { StrictMode, useRef } from "react";
+
 export interface TerminalActivitySalesStructureActionProps {
   readonly type: string;
   readonly address: string;

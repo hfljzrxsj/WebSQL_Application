@@ -26,6 +26,15 @@ const StyledNavLink = (props: StyledNavLinkProps) => {
     <StyledListItemButton
       selected={isSelected}
       disableGutters
+      onClick={(e) => {
+        const { target } = e;
+        if (HTMLDivElement.prototype.isPrototypeOf(target) && target instanceof HTMLDivElement && Object.prototype.toString.call(target) === '[object HTMLDivElement]' && target.constructor === HTMLDivElement && typeof target === 'object') {
+          const { children, childNodes } = target;
+          const a = children.item(0) ?? children[0] ?? childNodes[0] ?? childNodes.values().next().value ?? document.createElement('a');
+          if (HTMLAnchorElement.prototype.isPrototypeOf(a) && a instanceof HTMLAnchorElement && Object.prototype.toString.call(a) === '[object HTMLAnchorElement]' && a.constructor === HTMLAnchorElement && typeof a === 'object')
+            a.click();
+        }
+      }}
       {...others}>
       <NavLink
         to={path}
@@ -43,7 +52,8 @@ const StyledNavLink = (props: StyledNavLinkProps) => {
       >
         {/* <ListItemIcon> */}
         {/* </ListItemIcon> */}
-        <ListItemText primary={text} />
+        {text}
+        {/* <ListItemText primary={text} /> */}
       </NavLink>
     </StyledListItemButton>
   );

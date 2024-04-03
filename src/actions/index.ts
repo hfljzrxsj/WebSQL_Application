@@ -30,13 +30,24 @@ const setItemAndHeaders = (k: string, v: string) => {
   common[k] = v;
   localStorage.setItem(k, v);
 };
-export const loginAction = ({ adminId, password, scode }: { readonly [adminIdString]: string, readonly password: string, readonly scode: string; }) => (dispatch: Dispatch<snackbarAlertAction>) => axios.post<commonResponse<{
+export const loginAction = ({ adminId, password,
+  // scode
+}: {
+  readonly [adminIdString]: string, readonly password: string,
+  // readonly scode: string;
+}) => (dispatch: Dispatch<snackbarAlertAction>) => axios.post<commonResponse<{
   readonly [adminIdString]: string;
   readonly jwt: string;
   readonly level: number;
   readonly orgId: string;
   readonly orgnization: string;
-}>>('/api/user/login', null, { params: { adminId, password, scode, uuid: sessionStorage.getItem(uuidString) } })
+}>>('/api/user/login', null, {
+  params: {
+    adminId, password,
+    // scode,
+    // uuid: sessionStorage.getItem(uuidString)
+  }
+})
   .then(e => {
     const { code, info, data } = e.data ?? {};
     if (e.status === 200 && code === successCode) {

@@ -1,9 +1,10 @@
 .NavLink {
-  display: flex;
+  // display: flex;
   text-decoration: none;
   width: 100%;
   padding: 0 9q;
   color: black;
+  text-align: center;
 }
 
 .CollapseClick {
@@ -18,7 +19,9 @@
 }
 
 div.overview {
-  padding-left: 8px;
+  $paddingLR: 9q;
+  padding-left: $paddingLR;
+  padding-right: $paddingLR;
 }
 
 div.ListItemButton {

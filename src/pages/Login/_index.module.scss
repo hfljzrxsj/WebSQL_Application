@@ -5,8 +5,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  background-image: url("https://simt.wiley.cn/LoginBackground.svg");
+  background-size: cover;
+  background-position: center;
 
-  > div {
+  & > div {
     padding: 1em;
     display: flex;
     gap: 1em;
@@ -16,6 +19,10 @@
     border-radius: 1em;
     background: #fff;
 
+    @media screen and (orientation:landscape) {
+      transform: scale(2);
+    }
+
     .input {
       background-color: rgb(248, 250, 252);
     }
@@ -24,4 +31,5 @@
       min-width: 100%;
     }
   }
+
 }

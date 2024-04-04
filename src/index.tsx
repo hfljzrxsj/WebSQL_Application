@@ -1,7 +1,6 @@
 import './index.scss';
 import { render } from 'react-dom';
 import WebSQL from './pages/WebSQL';
-import BasicSelect from './pages/Test/MUISelect';
 // import { register } from './serviceWorkerRegistration';
 // import './mock';
 // import 'virtual:svg-cions-register';

@@ -36,6 +36,7 @@ jobs:
       run: |
         npm i --legacy-peer-deps --force
         npm run vite:build --if-present
+        node processHTML.mjs
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@v4
       with:

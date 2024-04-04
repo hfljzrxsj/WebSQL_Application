@@ -2,7 +2,7 @@ name: NodeJS with Webpack
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "WebSQL" ]
   pull_request:
     branches: [ "develop_h5" ]
 permissions:

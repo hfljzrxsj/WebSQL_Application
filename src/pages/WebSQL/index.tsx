@@ -55,7 +55,7 @@ const db = that.openDatabase(name, version, displayName, estimatedSize, (e) => {
 // const [makeSQL, setMakeSQL] = useSetState<Student>({
 //   Sid: 0,
 // });
-fetch('./assets/sql.sql').then(e => e.text()).then((e: string) => {
+fetch('assets/sql.sql').then(e => e.text()).then((e: string) => {
   db.transaction(tx => {
     e.split(';').forEach(i => {
       const sql = i.trim();
@@ -80,7 +80,7 @@ export default function WebSQL () {
       readonly type?: 'enum' | 'number' | 'between';
       readonly enum?: ReadonlyArray<string>;
     }>;
-  }, []>(() => fetch('./assets/config.json').then(e => e.json()), {
+  }, []>(() => fetch('assets/config.json').then(e => e.json()), {
     loadingDelay: 300,
     throttleWait: 300,
   });

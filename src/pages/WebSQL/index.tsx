@@ -99,7 +99,7 @@ export default function WebSQL () {
     return pre;
   }, {} as RecordIdBool));
   const buttonOnClick = (s = sql) => {
-    const arr = s.split(';');
+    const arr = s.trim().split(';');
     db.transaction(tx => {
       for (let i of arr) {
         if (i)
@@ -344,7 +344,7 @@ export default function WebSQL () {
           fullWidth
           aria-autocomplete="both"
           label='SQL'
-          onChange={e => setSql(e.target.value.trim())}
+          onChange={e => setSql(e.target.value)}
           value={sql}
         />
         {/* </Paper> */}

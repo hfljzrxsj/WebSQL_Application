@@ -4085,7 +4085,8 @@
     "scss-bundle": "^3.1.2",
     "node-sass": "9.0.0",
     "@rollup/plugin-commonjs": "20.0.0",
-    "@vitejs/plugin-legacy": "5.3.1"
+    "@vitejs/plugin-legacy": "5.3.1",
+    "rollup-plugin-commonjs": "^10.1.0"
   },
   "devDependencies": {
     "coffee-script": "^1.10.0",

@@ -5,10 +5,12 @@
 // import { exclude } from './tsconfig.json';
 import { URL, fileURLToPath } from 'node:url';
 import {
+  // PluginOption,
   defineConfig
   // ,loadEnv
   // ,transformWithEsbuild
 } from 'vite';
+import type { OutputPlugin } from 'vite/node_modules/rollup';
 // import externalGlobals from 'rollup-plugin-external-globals';
 import { Plugin as importToCDN } from 'vite-plugin-cdn-import';
 // import _default from 'vite-plugin-cdn';
@@ -20,8 +22,10 @@ import {
   resolve
 } from 'path';
 import svgr from 'vite-plugin-svgr';
-import legacy from '@vitejs/plugin-legacy';
-// import commonjs from '@rollup/plugin-commonjs';
+// import legacy from '@vitejs/plugin-legacy';
+import commonjs from 'rollup-plugin-commonjs';//引入commojs
+// import commonjs from '@rollup/plugin-commonjs';//引入commojs
+// import requireTransform from 'vite-plugin-require-transform';//引入require
 // import { } from 'vite-plugin-svg-icons';
 // import svgLoader from 'vite-svg-loader';
 // import reactSvgPlugin from 'vite-plugin-react-svg';
@@ -58,7 +62,11 @@ export default defineConfig({
   'root': resolve('./src'), //  入口index.html，注意入口js应该与index.html 同一目录下（只能写到目录，不能写到具体文件）
   'base': './', // 'base': '/'
   'plugins': [
-    // commonjs(),
+    // commonjs() as PluginOption,
+    //我的入口文件是ts类型，所以下面必须加上.ts$，否则在main.ts无法使用require
+    // requireTransform({
+    //   fileRegex: /.js$|.jsx$|.ts$|.tsx$/
+    // }), //配置require
     react(),
     svgr({
       svgrOptions: {
@@ -372,6 +380,9 @@ export default defineConfig({
           // }
         },
         hoistTransitiveImports: true,
+        plugins: [
+          commonjs() as OutputPlugin
+        ]
         // preserveModules: true,
       },
       plugins: [

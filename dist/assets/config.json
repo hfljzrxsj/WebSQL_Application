@@ -1,0 +1,4 @@
+{
+  "tableName": "Student",
+  "config": [ { "id": "Sid", "name": "学号", "type": "number" }, { "id": "Sname", "name": "姓名" }, { "id": "Sage", "name": "年龄", "type": "between" }, { "id": "Ssex", "name": "性别", "type": "enum", "enum": [ "男", "女" ] }, { "id": "Sclass", "name": "班级", "type": "number" }, { "id": "Sdept", "name": "专业", "type": "number" }, { "id": "Saddr", "name": "住址" } ]
+}

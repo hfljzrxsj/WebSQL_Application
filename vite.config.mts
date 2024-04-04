@@ -10,7 +10,7 @@ import {
   // ,loadEnv
   // ,transformWithEsbuild
 } from 'vite';
-import type { OutputPlugin } from 'vite/node_modules/rollup';
+// import type { OutputPlugin } from 'vite/node_modules/rollup';
 // import externalGlobals from 'rollup-plugin-external-globals';
 import { Plugin as importToCDN } from 'vite-plugin-cdn-import';
 // import _default from 'vite-plugin-cdn';
@@ -23,7 +23,7 @@ import {
 } from 'path';
 import svgr from 'vite-plugin-svgr';
 // import legacy from '@vitejs/plugin-legacy';
-import commonjs from 'rollup-plugin-commonjs';//引入commojs
+// import commonjs from 'rollup-plugin-commonjs';//引入commojs
 // import commonjs from '@rollup/plugin-commonjs';//引入commojs
 // import requireTransform from 'vite-plugin-require-transform';//引入require
 // import { } from 'vite-plugin-svg-icons';
@@ -381,7 +381,7 @@ export default defineConfig({
         },
         hoistTransitiveImports: true,
         plugins: [
-          commonjs() as OutputPlugin
+          // commonjs() as OutputPlugin
         ]
         // preserveModules: true,
       },

@@ -89,15 +89,13 @@ export default function WebSQL () {
   const [makeSQL, setMakeSQL] = useSetState<Partial<Student>>({
   });
   const makeSQLArr = Object.entries(makeSQL).filter(([, v]) => v !== '');
-  const [makeSQLRequire, setMakeSQLRequire] = useSetState<RecordIdBool>(idToName.reduce((pre, cur) => {
-    pre[cur.id] = false;
+  const makeSQLInit = (bool: boolean) => idToName.reduce((pre, cur) => {
+    pre[cur.id] = cur.type ? false : bool;
     return pre;
-  }, {} as RecordIdBool));
+  }, {} as RecordIdBool);
+  const [makeSQLRequire, setMakeSQLRequire] = useSetState<RecordIdBool>(makeSQLInit(false));
   const makeSQLRequireArr = Object.values(makeSQLRequire);
-  const [makeSQLFuzzy, setMakeSQLFuzzy] = useSetState<RecordIdBool>(idToName.reduce((pre, cur) => {
-    pre[cur.id] = true;
-    return pre;
-  }, {} as RecordIdBool));
+  const [makeSQLFuzzy, setMakeSQLFuzzy] = useSetState<RecordIdBool>(makeSQLInit(false));
   const buttonOnClick = (s = sql) => {
     const arr = s.trim().split(';');
     db.transaction(tx => {
@@ -130,14 +128,8 @@ export default function WebSQL () {
   useUpdateEffect(() => unstable_batchedUpdates(() => {
     const initSQL = `SELECT * FROM ${data?.tableName};`;
     setSql(initSQL);
-    setMakeSQLRequire(idToName.reduce((pre, cur) => {
-      pre[cur.id] = false;
-      return pre;
-    }, {} as RecordIdBool));
-    setMakeSQLFuzzy(idToName.reduce((pre, cur) => {
-      pre[cur.id] = true;
-      return pre;
-    }, {} as RecordIdBool));
+    setMakeSQLRequire(makeSQLInit(false));
+    setMakeSQLFuzzy(makeSQLInit(false));
     callbackEventLoop(() => buttonOnClick(initSQL));
     // buttonOnClick();
   }), [data?.tableName]);
@@ -289,7 +281,7 @@ export default function WebSQL () {
                     // onChange={e => setMakeSQL({ Sid: Number(e.target.value) })}
                     />
                     <FormControlLabel
-                      control={<Checkbox defaultChecked />}
+                      control={<Checkbox />}
                       label="模糊搜索"
                       onChange={(_e, c) => setMakeSQLFuzzy({
                         [i.id]: c

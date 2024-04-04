@@ -1,1 +1,1 @@
-self.addEventListener("install",i=>{i.waitUntil(self.skipWaiting())});self.addEventListener("activate",i=>{i.waitUntil(self.clients.claim())});self.addEventListener("message",i=>{var t;((t=i==null?void 0:i.data)==null?void 0:t.type)==="SKIP_WAITING"&&self.skipWaiting()});
+self.addEventListener("install",e=>{e.waitUntil(self.skipWaiting())});self.addEventListener("activate",e=>{e.waitUntil(self.clients.claim())});self.addEventListener("message",e=>{e?.data?.type==="SKIP_WAITING"&&self.skipWaiting()});

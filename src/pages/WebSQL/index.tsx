@@ -222,7 +222,9 @@ export default function WebSQL () {
       //--------------------SQL--------------------
       '*' :
       entries(makeSQLRequire).reduce((pre, cur) => {
-        if (cur[1]) return [...pre, cur[0]];
+        const [k, v] = cur;
+        const i = idToNameRecord[k];
+        if (v) return [...pre, `${i?.foreignTable ?? tableName}.${i?.foreignKey ?? k}`];
         else return pre;
       }, [] as ReadonlyArray<string>).join(', ');
     setSql(`SELECT ${SELECT_something} FROM ${tableName}${IndexedBy}${leftJoin}${WHERE_SQL}${LimitOFFET};`);

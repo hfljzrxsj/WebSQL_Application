@@ -52,6 +52,7 @@ const StyledNavLink = (props: StyledNavLinkProps) => {
         })}
         onClick={() => {
           dispatch({ type: AppBarEnumActionName.SET_TITLE, payload: { title: text } });
+          document.title = text;
           // redirect(path);
           // waitLastEventLoop(() => location.reload());
         }}

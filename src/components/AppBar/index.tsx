@@ -15,6 +15,7 @@ import { enumActionName as DBEnumActionName, enumDB, useDBTypedSelector, type DB
 import { useDispatch } from 'react-redux';
 import { db } from '@/pages/WebSQL';
 import { enumActionName, enumSeverity, enumSnackbarAlert, type snackbarAlertAction } from '@/store/SnackBarRuducer';
+import { waitLastEventLoop } from '@/utils';
 interface ButtonAppBarProps extends AppBarProps {
   setMenuToggle: () => void;
 }
@@ -48,6 +49,29 @@ export const CommonDialog = (props: {
     </DialogActions>
   </Dialog>;
 };
+const runSQL = (id: string, snackbarAlertDispatch: Dispatch<snackbarAlertAction>, text: string) => {
+  let timeId = setTimeout(() => {
+    waitLastEventLoop(() => location.reload());
+  }, 5e3);
+  fetch(`${import.meta.env.VITE_sqlFolder}/${id}.sql`).then(e => e.text()).then(s => {
+    const arr = s.trim().split(';');
+    db.transaction(tx => {
+      for (let i of arr) {
+        if (i) {
+          tx.executeSql(i + ';', []);
+          // if (i.toUpperCase().startsWith('DROP TRIGGER')) {
+          // }
+        }
+      }
+    }, (e) => {
+      console.log(e);
+      snackbarAlertDispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `执行失败, 原因：${e.message}`, [enumSnackbarAlert.severity]: enumSeverity.error } });
+      clearTimeout(timeId);
+    }, () => {
+      snackbarAlertDispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: text, [enumSnackbarAlert.severity]: enumSeverity.success } });
+    });
+  });
+};
 export default function ButtonAppBar (props: ButtonAppBarProps) {
   const title = useAppBarTitleTypedSelector(state => state.AppBarTitle[enumAppBarTitle.title]);
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -75,7 +99,22 @@ export default function ButtonAppBar (props: ButtonAppBarProps) {
         <IconButton onClick={matches ? setMenuToggle : setMenuOpen.bind(null, true)} className={style['menuIcon'] ?? ''} size='large'>
           <MenuIcon />
         </IconButton>
-        <span>{(title || id) ?? documentTitle}</span>
+        <span
+          onClick={() => {
+            const s = prompt('运行单条SQL代码');
+            const sTrim = s?.trim();
+            if (sTrim) {
+              db.transaction(tx => {
+                tx.executeSql(sTrim, []);
+              }, (e) => {
+                console.log(e);
+                snackbarAlertDispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `执行失败, 原因：${e.message}`, [enumSnackbarAlert.severity]: enumSeverity.error } });
+              }, () => {
+                snackbarAlertDispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `${sTrim}\n执行成功`, [enumSnackbarAlert.severity]: enumSeverity.success } });
+              });
+            }
+          }}
+        >{(title || id) ?? documentTitle}</span>
         <Button className={classNames(style['Avatar'], { [style['open'] ?? '']: PopoverOpen })}
           onClick={(event) => {
             setAnchorEl(event.currentTarget);
@@ -132,23 +171,7 @@ export default function ButtonAppBar (props: ButtonAppBarProps) {
           onClick={() => {
             if (confirm('确定要删库跑路吗？')) {
               config?.map(i => i.children).flat().forEach(id => {
-                fetch(`${import.meta.env.VITE_sqlFolder}/${id}.sql`).then(e => e.text()).then(s => {
-                  const arr = s.trim().split(';');
-                  db.transaction(tx => {
-                    for (let i of arr) {
-                      if (i) {
-                        tx.executeSql(i + ';', []);
-                        // if (i.toUpperCase().startsWith('DROP TRIGGER')) {
-                        // }
-                      }
-                    }
-                  }, (e) => {
-                    console.log(e);
-                    snackbarAlertDispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `执行失败, 原因：${e.message}`, [enumSnackbarAlert.severity]: enumSeverity.error } });
-                  }, () => {
-                    snackbarAlertDispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `删${id}库跑路成功！`, [enumSnackbarAlert.severity]: enumSeverity.success } });
-                  });
-                });
+                runSQL(id, snackbarAlertDispatch, `删${id}库跑路成功! 5秒后自动刷新`);
               });
             }
             handleClose();
@@ -168,24 +191,7 @@ export default function ButtonAppBar (props: ButtonAppBarProps) {
         onClick={() => {
           clearCache();
           localStorage.clear();
-          fetch(`${import.meta.env.VITE_sqlFolder}/${id}.sql`).then(e => e.text()).then(s => {
-            const arr = s.trim().split(';');
-            db.transaction(tx => {
-              for (let i of arr) {
-                if (i) {
-                  tx.executeSql(i + ';', []);
-                }
-              }
-            }, (e) => {
-              console.log(e);
-              snackbarAlertDispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `执行失败, 原因：${e.message}`, [enumSnackbarAlert.severity]: enumSeverity.error } });
-            }, () => {
-              snackbarAlertDispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `重置${id}表成功, 5秒后自动刷新`, [enumSnackbarAlert.severity]: enumSeverity.success } });
-              setTimeout(() => {
-                location.reload();
-              }, 5e3);
-            });
-          });
+          runSQL(id ?? '', snackbarAlertDispatch, `重置${id}表成功! 5秒后自动刷新`);
           handleClose();
           // navigate(concatUrl(pathString.login));
         }}

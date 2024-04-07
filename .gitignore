@@ -8808,7 +8808,7 @@ _projects
 ##---./templates\Wintersmith.gitignore---
 contents/
 templates/
-config.json
+# config.json
 # package.json
 
 ##---./templates\WordPress.gitignore---

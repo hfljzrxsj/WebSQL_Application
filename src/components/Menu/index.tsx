@@ -1,5 +1,5 @@
 import { StrictMode, useState, type Dispatch } from "react";
-import { Collapse, type ListItemButtonProps, List, Divider, ListItemButton, ListItemText, StyledEngineProvider, } from '@mui/material';
+import { Collapse, type ListItemButtonProps, List, Divider, ListItemButton, ListItemText, StyledEngineProvider, Backdrop, CircularProgress, } from '@mui/material';
 import { concatUrl, menuItems } from "@/Route";
 import { NavLink, type RouteObject } from "react-router-dom";
 import KeyboardArrowDownIcon from '@mui/icons-material/ExpandMore';
@@ -7,7 +7,11 @@ import style from './_index.module.scss';
 import * as classnames from 'classnames';
 import { unstable_batchedUpdates } from "react-dom";
 import { useDispatch } from "react-redux";
-import { enumActionName, type AppBarTitleAction } from "@/store/AppBarTitleRuducer";
+import { enumActionName as AppBarEnumActionName, type AppBarTitleAction } from "@/store/AppBarTitleRuducer";
+import { useRequest } from "ahooks";
+import axios from "axios";
+import { commonUseRequestParams } from "@/App";
+import { enumActionName as DBEnumActionName, type DBAction } from "@/store/DBReducer";
 const StyledListItemButton = ({ className, ...props }: ListItemButtonProps) => <ListItemButton
   className={classnames(className, style['ListItemButton'])}
   {...props}
@@ -47,7 +51,9 @@ const StyledNavLink = (props: StyledNavLinkProps) => {
           return style['NavLink'];
         })}
         onClick={() => {
-          dispatch({ type: enumActionName.SET_TITLE, payload: { title: text } });
+          dispatch({ type: AppBarEnumActionName.SET_TITLE, payload: { title: text } });
+          // redirect(path);
+          // waitLastEventLoop(() => location.reload());
         }}
       >
         {/* <ListItemIcon> */}
@@ -86,12 +92,37 @@ const StyledCollase = ({ item }: { readonly item: RouteObject; }) => {
     </StrictMode>
   );
 };
+export type DBConfigData = ReadonlyArray<{
+  readonly path: RouteObject['path'];
+  readonly children: ReadonlyArray<string>;
+}>;
 export default function Menu () {
+  const dispatch = useDispatch<Dispatch<DBAction>>();
+  const { data, loading } = useRequest(() => axios.get<DBConfigData>(import.meta.env.VITE_configFile).then(e => {
+    const { data } = e;
+    dispatch({
+      type: DBEnumActionName.SET,
+      payload: {
+        config: data
+      }
+    });
+    return data;
+  }).catch(console.error), commonUseRequestParams);
+  if (loading || !data)
+    return <Backdrop open={true}><CircularProgress /></Backdrop>;
+  const dbData = data.map(i => ({
+    id: i.path,
+    path: i.path,
+    children: i.children.map(i => ({
+      path: i,
+      id: i
+    }))
+  }));
   return (
     <StrictMode>
       <StyledEngineProvider injectFirst>
         {
-          menuItems.map((item, index) => {
+          [...menuItems, ...dbData].map((item, index) => {
             const { children, id = '', path = '' } = item;
             return (
               <StrictMode>

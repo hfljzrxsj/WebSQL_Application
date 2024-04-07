@@ -1,19 +1,20 @@
-import { AppBar, Button, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, IconButton, Popover, type AppBarProps } from '@mui/material';
+import { AppBar, Button, Dialog, DialogActions, DialogContent, DialogTitle, Drawer, FormControlLabel, IconButton, Popover, Switch, type AppBarProps } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import style from './_index.module.scss';
 import { enumAppBarTitle, useAppBarTitleTypedSelector } from '@/store/AppBarTitleRuducer';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { adminIdString } from '@/actions/axios_instance';
-import { StrictMode, useContext, useState } from 'react';
+import { StrictMode, useContext, useState, type Dispatch } from 'react';
 import { unstable_batchedUpdates } from 'react-dom';
-import { useNavigate } from 'react-router';
-import { concatUrl, pathString } from '@/Route';
+import { useParams } from 'react-router';
 import * as classNames from 'classnames';
-import LogoutIcon from '@mui/icons-material/Logout';
 import { documentTitle } from '@/pages/Overview';
 import Menu from '../Menu';
 import { MediaQueryContext } from '@/App';
+import { enumActionName as DBEnumActionName, enumDB, useDBTypedSelector, type DBAction } from "@/store/DBReducer";
+import { useDispatch } from 'react-redux';
+import { db } from '@/pages/WebSQL';
+import { enumActionName, enumSeverity, enumSnackbarAlert, type snackbarAlertAction } from '@/store/SnackBarRuducer';
 interface ButtonAppBarProps extends AppBarProps {
   setMenuToggle: () => void;
 }
@@ -55,10 +56,16 @@ export default function ButtonAppBar (props: ButtonAppBarProps) {
     setOpen(false);
   };
   const PopoverOpen = Boolean(anchorEl);
-  const navigate = useNavigate();
   const { setMenuToggle, ...others } = props;
   const matches = useContext(MediaQueryContext);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { subtitle, id } = useParams();
+  const dispatch = useDispatch<Dispatch<DBAction>>();
+  const snackbarAlertDispatch = useDispatch<Dispatch<snackbarAlertAction>>();
+  const { index, config } = useDBTypedSelector(state => ({
+    index: state.DB[enumDB.index],
+    config: state.DB[enumDB.config]
+  }));
   return (
     <StrictMode>
       <AppBar
@@ -68,14 +75,14 @@ export default function ButtonAppBar (props: ButtonAppBarProps) {
         <IconButton onClick={matches ? setMenuToggle : setMenuOpen.bind(null, true)} className={style['menuIcon'] ?? ''} size='large'>
           <MenuIcon />
         </IconButton>
-        <span>{title ?? documentTitle}</span>
+        <span>{(title || id) ?? documentTitle}</span>
         <Button className={classNames(style['Avatar'], { [style['open'] ?? '']: PopoverOpen })}
           onClick={(event) => {
             setAnchorEl(event.currentTarget);
           }}
         >
           <AccountCircleIcon />
-          <span>{localStorage.getItem(adminIdString)}</span>
+          <span>HJX, HJX</span>
           <KeyboardArrowDownIcon />
         </Button>
       </AppBar>
@@ -97,26 +104,90 @@ export default function ButtonAppBar (props: ButtonAppBarProps) {
       >
         {/* <p>用户等级：<span>{getLevel()}</span></p>
         <p>用户权限：<span>{localStorage.getItem(regionName) ?? getLocalStorageFromJSON(orgId)}</span></p> */}
-        <StyledButton
+        {subtitle === config?.[0]?.path && <FormControlLabel control={<Switch />} label="索引"
+          onChange={(_e, c) => {
+            dispatch({
+              type: DBEnumActionName.SET,
+              payload: {
+                index: c
+              }
+            });
+          }}
+          checked={index ?? false}
+        />}
+        {id && <StyledButton
+          fullWidth
           onClick={() =>
             unstable_batchedUpdates(() => {
               setAnchorEl(null);
               setOpen(true);
             })
           }
-          startIcon={< LogoutIcon />}
+        // startIcon={< LogoutIcon />}
         >
-          退出登录
-        </StyledButton>
+          重置{id}表
+        </StyledButton>}
+        <Button
+          fullWidth
+          onClick={() => {
+            if (confirm('确定要删库跑路吗？')) {
+              config?.map(i => i.children).flat().forEach(id => {
+                fetch(`${import.meta.env.VITE_sqlFolder}/${id}.sql`).then(e => e.text()).then(s => {
+                  const arr = s.trim().split(';');
+                  db.transaction(tx => {
+                    for (let i of arr) {
+                      if (i) {
+                        tx.executeSql(i + ';', []);
+                        // if (i.toUpperCase().startsWith('DROP TRIGGER')) {
+                        // }
+                      }
+                    }
+                  }, (e) => {
+                    console.log(e);
+                    snackbarAlertDispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `执行失败, 原因：${e.message}`, [enumSnackbarAlert.severity]: enumSeverity.error } });
+                  }, () => {
+                    snackbarAlertDispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `删${id}库跑路成功！`, [enumSnackbarAlert.severity]: enumSeverity.success } });
+                  });
+                });
+              });
+            }
+            handleClose();
+          }
+          }
+          // startIcon={< LogoutIcon />}
+          color='error'
+          variant='outlined'
+        >
+          删库跑路
+        </Button>
       </Popover>
       <CommonDialog
         open={open}
         handleClose={handleClose}
-        title='确定要退出登录吗？'
+        title={`确定要重置${id}表吗？`}
         onClick={() => {
           clearCache();
           localStorage.clear();
-          navigate(concatUrl(pathString.login));
+          fetch(`${import.meta.env.VITE_sqlFolder}/${id}.sql`).then(e => e.text()).then(s => {
+            const arr = s.trim().split(';');
+            db.transaction(tx => {
+              for (let i of arr) {
+                if (i) {
+                  tx.executeSql(i + ';', []);
+                }
+              }
+            }, (e) => {
+              console.log(e);
+              snackbarAlertDispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `执行失败, 原因：${e.message}`, [enumSnackbarAlert.severity]: enumSeverity.error } });
+            }, () => {
+              snackbarAlertDispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `重置${id}表成功, 5秒后自动刷新`, [enumSnackbarAlert.severity]: enumSeverity.success } });
+              setTimeout(() => {
+                location.reload();
+              }, 5e3);
+            });
+          });
+          handleClose();
+          // navigate(concatUrl(pathString.login));
         }}
       />
       <Drawer

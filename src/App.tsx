@@ -5,7 +5,7 @@ import { Provider } from 'react-redux';
 import store from './store';
 import SnackbarAlert from './components/SnackbarAlert';
 import { CssBaseline, ScopedCssBaseline, StyledEngineProvider, useMediaQuery } from '@mui/material';
-import './mock';
+// import './mock';
 
 export const commonUseRequestParams = {
   loadingDelay: 300,

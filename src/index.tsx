@@ -1,6 +1,7 @@
+import { StrictMode } from 'react';
 import './index.scss';
 import { render } from 'react-dom';
-import WebSQL from './pages/WebSQL';
+import App from './App';
 // import { register } from './serviceWorkerRegistration';
 // import './mock';
 // import 'virtual:svg-cions-register';
@@ -11,19 +12,19 @@ import WebSQL from './pages/WebSQL';
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
 // createRoot(container).
-// render(
-//   <StrictMode>
-//     <App />
-//   </StrictMode>
-//   , document.body
-// );
+render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+  , document.body
+);
 // register();
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 // reportWebVitals();
-render(
-  <WebSQL />
-  // <BasicSelect />
-  , document.body
-);
+// render(
+//   <WebSQL />
+//   // <BasicSelect />
+//   , document.body
+// );

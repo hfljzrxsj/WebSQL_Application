@@ -49,6 +49,16 @@
   display: flex;
   flex-direction: column;
   gap: 9q;
+  align-items: center;
+
+  button {
+    text-transform: none;
+  }
+
+  > label {
+    margin-right: 0;
+    margin-left: 0;
+  }
 
   > p > span {
     font-weight: 900;

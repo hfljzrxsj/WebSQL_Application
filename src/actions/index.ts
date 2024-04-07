@@ -1,8 +1,5 @@
 import { dateFormat, timeFormat } from "@/components/FilterDialogWithBreadcrumbs";
 import { regionName } from "@/components/MyTable";
-import type { DistributionOfTerminalSalesArray } from "@/pages/SalesVolumeMonitoring/DistributionOfTerminalSales";
-import type { SalesSituationOfTerminalSubChannels_labelType } from "@/pages/SalesVolumeMonitoring/SalesSituationOfTerminalSubChannels";
-import type { TOP10ModelInformation_labelType } from "@/pages/SalesVolumeMonitoring/TOP10ModelInformation";
 import { enumActionName, enumSeverity, enumSnackbarAlert, type snackbarAlertAction } from "@/store/SnackBarRuducer";
 import axios from "axios";
 import type { Dispatch } from "redux";

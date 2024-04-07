@@ -8,6 +8,8 @@ import type {
 } from '@/types';
 import { useSelector, type TypedUseSelectorHook } from 'react-redux';
 import type { actionInterface, TypedUseSelectorHookState } from '.';
+import type { DOMString } from '@/pages/WebSQL/type';
+import type { AlertColor } from '@mui/material';
 export enum enumActionName {
   SnackbarAlert = 'SnackbarAlert',
   OPENTRUE = 'OPENTRUE',
@@ -27,9 +29,9 @@ export enum enumSeverity {
   warning = 'warning'
 }
 interface State {
-  readonly [enumSnackbarAlert.alertText]: RRNstring;
+  readonly [enumSnackbarAlert.alertText]: RRNstring | DOMString;
   readonly [enumSnackbarAlert.open]?: RRNboolean;
-  readonly [enumSnackbarAlert.severity]: RRN_<enumSeverity>;
+  readonly [enumSnackbarAlert.severity]: RRN_<AlertColor>;
 }
 
 // export type RRNState = RRN_<State>;

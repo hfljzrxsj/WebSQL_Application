@@ -1,138 +1,206 @@
-import { Alert, Button, Checkbox, FormControl, FormControlLabel, InputLabel, MenuItem, Paper, Select, Skeleton, Slider, Snackbar, Table, TableBody, TableCell, TableHead, TableRow, TextField, type AlertColor } from "@mui/material";
-import type { WindowDatabase, SQLResultSet, DOMString } from "./type";
-import { useRequest, useSafeState, useSetState, useUpdateEffect } from "ahooks";
-import { useMemo } from "react";
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Button, Checkbox, Dialog, Fab, FormControl, FormControlLabel, InputLabel, MenuItem, Paper, Select, Skeleton, Slider, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Typography, type AlertColor, type DialogProps, type SelectProps } from "@mui/material";
+import type { WindowDatabase, SQLResultSet, DOMString, SQLResultSetRowList } from "./type";
+import { useGetState, useRequest, useSafeState, useSetState, useThrottleFn, useUpdateEffect } from "ahooks";
+import { useCallback, useEffect, useMemo, type Dispatch } from "react";
 import style from './_index.module.scss';
 import * as classNames from "classnames";
 import { unstable_batchedUpdates } from "react-dom";
-const { log } = console;
+import { waitLastEventLoop } from "@/utils/waitLastEventLoop";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import AddIcon from '@mui/icons-material/Add';
+import { useParams } from "react-router";
+import { type snackbarAlertAction, enumActionName, enumSnackbarAlert, enumSeverity, useSnackBarTypedSelector } from "@/store/SnackBarRuducer";
+import { useDispatch } from "react-redux";
+import axios from "axios";
+import { commonUseRequestParams } from "@/App";
+import { enumDB, useDBTypedSelector } from "@/store/DBReducer";
+const { entries, values, keys } = Object;
 interface Student {
-  readonly Sid: number; // 假设INT和INT2在TypeScript中都可以映射为number类型  
-  readonly Sname: string; // TEXT在TypeScript中映射为string类型  
-  readonly Sage: [number, number]; // 同上，INT2映射为number  
-  readonly Ssex: string; // TEXT映射为string  
-  readonly Sclass: number; // INT映射为number  
-  readonly Sdept: number; // INT2映射为number  
-  readonly Saddr: string; // TEXT映射为string，并且由于Saddr在SQL中是可选的，所以在TypeScript中使用可选属性（?）表示  
+  student_id: number;
+  student_name: string;
+  sex: number; // 假设sex可以为null，如果它不是必需的，或者数据库允许NULL值  
+  age: number; // 假设age可以为null，如果它不是必需的，或者数据库允许NULL值  
+  college_id: number; // 假设college_id可以为null，如果它不是必需的，或者数据库允许NULL值  
+  class_id: number; // 假设class_id可以为null，如果它不是必需的，或者数据库允许NULL值  
+  birthdate: Date; // 使用Date类型来表示日期，允许为null  
+  registration_date: Date; // 使用Date类型来表示日期，由于它在SQL中是非空的，这里也应该是非空的  
+  address: string; // 假设address可以为null，如果它不是必需的，或者数据库允许NULL值  
 }
-const callbackEventLoop = (callback: () => void) => {
-  const cb = (resolve: () => void) =>
-    requestIdleCallback?.(() =>
-      setTimeout?.(() =>
-        requestAnimationFrame?.(() =>
-          queueMicrotask?.(() =>
-            Promise?.resolve?.()?.then?.(() => {
-              const { port1, port2 } = new MessageChannel();
-              port2.onmessage = () => resolve?.();
-              port1?.postMessage?.(null);
-            }
-            ).catch(console?.error)
-          )
-        )
-      )
-    );
-  // addEventListener?.('load', () =>
-  return new Promise<void>(resolve =>
-    new Promise<void>(resolve =>
-      cb?.(resolve)
-    )?.then?.(() =>
-      cb?.(() => {
-        callback?.();
-        resolve?.();
-      })
-    ).catch(console?.error)).catch(console?.error);
-  // );
-};
 //@ts-expect-error
 const that: WindowDatabase = window ?? global ?? globalThis ?? self ?? this;
-const name = 'table';
+const name = import.meta.env.VITE_DBName;
 const version = '1.0';
 const displayName = name;
 const estimatedSize = 2 * 1024 * 1024;
-const db = that.openDatabase(name, version, displayName, estimatedSize, (e) => {
-  log('sucess', e, 'version', e.version);
+export const db = that.openDatabase(name, version, displayName, estimatedSize, (e) => {
+  console.log('sucess', e, 'version', e.version);
 });
-// const [makeSQL, setMakeSQL] = useSetState<Student>({
-//   Sid: 0,
-// });
-fetch('assets/sql.sql').then(e => e.text()).then((e: string) => {
-  db.transaction(tx => {
-    e.split(';').forEach(i => {
-      const sql = i.trim();
-      if (sql)
-        tx.executeSql(sql);
-    });
-  }, console.error, () => {
-    log('Yes, hjx!');
-  });
-});
+const allString = '未选择';
+interface SelectFromDB extends SelectProps {
+  readonly i: idToNameOne;
+}
+const SelectFromDB = (props: SelectFromDB) => {
+  const { i, ...others } = props;
+  const { foreignTable, foreignKey, id } = i;
+  const [data, setData] = useSafeState<SQLResultSetRowList>();
+  useEffect(() => {
+    if (foreignTable && foreignKey)
+      db.transaction(tx => {
+        tx.executeSql(`SELECT * FROM ${foreignTable}`, [], function (_tx, results) {
+          setData(results.rows);
+        });
+      }, (e) => {
+        console.log(e);
+      }, () => {
+        console.log('success');
+      });
+  }, [foreignTable, foreignKey]);
+  return <FormControl fullWidth>
+    <InputLabel>{i.name}</InputLabel><Select
+      fullWidth
+      {...others}
+    >
+      <MenuItem value={undefined}>{allString}</MenuItem>
+      {i.enum ? (i.enum?.map((i, index) => <MenuItem value={index} key={index}>{i}</MenuItem>)) : (new Array(data?.length).fill(' ').map((_i, index) => <MenuItem value={data?.item(index)[id ?? '']} key={index}>{data?.item(index)[foreignKey ?? '']}</MenuItem>))
+      }
+    </Select></FormControl>;
+};
 type keyOfStudent = keyof Student;
 type RecordIdBool = Record<keyOfStudent, boolean>;
+type RecordOneRow = Record<keyOfStudent, number | string>;
 const minDistance = 0;
-const allString = '未选择';
+interface idToNameOne {
+  readonly id: keyOfStudent;
+  readonly name: string;
+  readonly type?: 'enum' | 'number' | 'between';
+  readonly enum?: ReadonlyArray<string>;
+  readonly foreignTable?: string;
+  readonly foreignKey?: string;
+  readonly primary?: boolean;
+  readonly min?: number;
+  readonly max?: number;
+  readonly step?: number;
+}
+const isVavid = (i: unknown) => i !== null && i !== undefined && i !== '';
+const isTypeNumber = (i: idToNameOne | undefined) => Boolean(i?.type);
+interface AlertProps {
+  readonly severity: AlertColor,
+  readonly alertText: string | DOMString;
+}
 export default function WebSQL () {
-  const { data, loading } = useRequest<{
-    readonly tableName: string;
-    readonly config: ReadonlyArray<{
-      readonly id: keyOfStudent;
-      readonly name: string;
-      // readonly between?: boolean;
-      readonly type?: 'enum' | 'number' | 'between';
-      readonly enum?: ReadonlyArray<string>;
-    }>;
-  }, []>(() => fetch('assets/config.json').then(e => e.json()), {
-    loadingDelay: 300,
-    throttleWait: 300,
-  });
-  const idToName = data?.config ?? [];
-  const [sql, setSql] = useSafeState('');
+  const dispatch = useDispatch<Dispatch<snackbarAlertAction>>();
+  const { subtitle, id } = useParams();
+  const { index, config } = useDBTypedSelector(state => ({
+    index: state.DB[enumDB.index],
+    config: state.DB[enumDB.config]
+  }));
+  const { data, loading, refresh } = useRequest(() => axios.get<ReadonlyArray<idToNameOne>>(`${import.meta.env.VITE_sqlFolder}/${id}.json`).then(e => e.data).catch(console.error), commonUseRequestParams);
+  useUpdateEffect(() => { refresh(); }, [id]);
+  const tableName = id ?? '';
+  // const tableName = 'Students';
+  const [page, setPage, getPage] = useGetState(0);
+  const [rowsPerPage, setRowsPerPage, getRowsPerPage] = useGetState(10);
+  const [count, setCount, getCount] = useGetState(0);
+  const idToName: ReadonlyArray<idToNameOne> = Array.isArray(data) ? (data ?? []) : [];
+  const idToNamePrimary = idToName.filter(i => i.primary);
+  const idToNameRecord = idToName.reduce((pre, cur) => {
+    const foreignKey = cur.foreignKey;
+    if (foreignKey) {
+      pre[foreignKey] = cur;
+    }
+    pre[cur.id] = cur;
+    return pre;
+  }, {} as Record<string, idToNameOne>);
+  const idToNameKeys = idToName.map(i => i.id);
+  const foreignKeysArr = idToName.filter(i => Boolean(i.foreignKey)).map(i => String(i.foreignKey));
+  const idToNameShow = idToName.filter(i => !Boolean(i.foreignKey)).map(i => String(i.id));
+  const columnsShow = [...idToNameShow, ...foreignKeysArr];
+  const [sql, setSql, getSql] = useGetState('');
   const [makeSQL, setMakeSQL] = useSetState<Partial<Student>>({
   });
-  const makeSQLArr = Object.entries(makeSQL).filter(([, v]) => v !== '');
+  const makeSQLArr = entries(makeSQL).filter(([k, v]) => isVavid(v) && idToNameKeys.includes(k as keyOfStudent));
   const makeSQLInit = (bool: boolean) => idToName.reduce((pre, cur) => {
     pre[cur.id] = cur.type ? false : bool;
     return pre;
   }, {} as RecordIdBool);
   const [makeSQLRequire, setMakeSQLRequire] = useSetState<RecordIdBool>(makeSQLInit(false));
-  const makeSQLRequireArr = Object.values(makeSQLRequire);
+  const makeSQLRequireArr = values(makeSQLRequire);
   const [makeSQLFuzzy, setMakeSQLFuzzy] = useSetState<RecordIdBool>(makeSQLInit(false));
-  const buttonOnClick = (s = sql) => {
+  //--------------------SQL--------------------
+  const IndexedBy = (index && subtitle === config?.[0]?.path) ? ` INDEXED BY ${tableName}_Index` : '';
+  const leftJoin = idToName.filter(i => i.foreignTable).reduce((pre, cur) => {
+    const { foreignTable, id } = cur;
+    return pre
+      + `LEFT JOIN ${foreignTable} ON ${tableName}.${id}=${foreignTable}.${id} `;
+  }, ' ').trimEnd();
+  const LimitOFFET = ` LIMIT ${getRowsPerPage()} OFFSET ${getRowsPerPage() * getPage()}`;
+  const initSQL = `SELECT * FROM ${tableName}${IndexedBy}${leftJoin}${LimitOFFET};`;
+  const noHasWhere = !makeSQLArr.length;
+  const WHERE_SQL = noHasWhere ? '' : ' WHERE ' +
+    makeSQLArr.reduce((pre, cur) => {
+      const [k, v] = cur;
+      if (!isVavid(v)) return pre;
+      if (Array.isArray(v)) return [...pre, `(${k}>=${v[0]}) and (${k}<=${v[1]})`];
+      else return [...pre, `${tableName}.${k} ${makeSQLFuzzy[k as keyOfStudent] ?
+        `LIKE "%${String(v)}%"` :
+        `= ${isTypeNumber(idToNameRecord[k]) ? v : `"${v}"`}`} `];
+    }, [] as ReadonlyArray<string>).join(
+      ' and ').trimEnd();
+  //--------------------SQL--------------------
+  const { run: buttonOnClick } = useThrottleFn(useCallback((s = sql) => {
     const arr = s.trim().split(';');
     db.transaction(tx => {
       for (let i of arr) {
         if (i)
           tx.executeSql(i, [], function (_tx, results) {
-            const { rows } = results;
-            log(results);
-            // if (results.insertId === undefined)
-            setSQLResultSetRowList({
-              rows
-            });
-            // else
-            //   setSQLResultSetRowList({
-            //     insertId: results.insertId,
-            //     rowsAffected: results.rowsAffected,
-            //   });
+            const { rows, rowsAffected } = results;
+            console.log(results);
+            if (rowsAffected === 0 && rows) {
+              setSQLResultSetRowList({
+                rows
+              });
+              setCount(rows.length);
+            }
+            else {
+              dispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `${i.split(' ')[0]}成功！`, [enumSnackbarAlert.severity]: enumSeverity.success } });
+            }
           });
       }
     }, (e) => {
       console.log(e);
       setSeverity({
         severity: 'error',
-        text: `执行失败, 原因：${e.message}`
+        alertText: `执行失败, 原因：${e.message}`
       });
+      dispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `执行失败, 原因：${e.message}`, [enumSnackbarAlert.severity]: enumSeverity.error } });
     }, () => {
       console.log('success');
+      db.transaction(tx => {
+        //--------------------SQL--------------------
+        tx.executeSql(`SELECT COUNT(*) FROM ${tableName}${WHERE_SQL};`, [], function (_tx, results) {
+          //--------------------SQL--------------------
+          const { rows } = results;
+          setCount(rows.item(0)['COUNT(*)']);
+        });
+      }, (e) => {
+        console.log(e);
+      }, () => {
+        console.log('success');
+      });
     });
-  };
-  useUpdateEffect(() => unstable_batchedUpdates(() => {
-    const initSQL = `SELECT * FROM ${data?.tableName};`;
+  }, [sql, tableName]));
+  useEffect(() => unstable_batchedUpdates(() => {
+    if (!data)
+      return;
     setSql(initSQL);
+    setMakeSQL(keys(makeSQL).reduce((pre, cur) => {
+      pre[cur as keyOfStudent] = undefined as never;
+      return pre;
+    }, {} as Student));
     setMakeSQLRequire(makeSQLInit(false));
     setMakeSQLFuzzy(makeSQLInit(false));
-    callbackEventLoop(() => buttonOnClick(initSQL));
-    // buttonOnClick();
-  }), [data?.tableName]);
+    waitLastEventLoop(() => buttonOnClick(initSQL));
+  }), [data]);
   const [SQLResultSetRowList, setSQLResultSetRowList] = useSetState<
     SQLResultSet>({
       insertId: 0,
@@ -143,55 +211,57 @@ export default function WebSQL () {
       }
     });
   useUpdateEffect(() => {
-    setSql(`SELECT ${makeSQLRequireArr.every(i => !Boolean(i)) ?
+    const SELECT_something = makeSQLRequireArr.every(i => !Boolean(i)) ?
+      //--------------------SQL--------------------
       '*' :
-      Object.entries(makeSQLRequire).reduce((pre, cur) => {
-        if (cur[1])
-          return [...pre, cur[0]];
-        else
-          return pre;
-      }, [] as ReadonlyArray<string>).join(', ')
-      } FROM ${data?.tableName}${makeSQLArr.length === 0 ? '' : ' WHERE ' +
-        makeSQLArr.reduce((pre, cur) => {
-          const [k, v] = cur;
-          if (v === '') {
-            return pre;
-          }
-          if (Array.isArray(v)) {
-            return [...pre, `(${k}>=${v[0]}) and (${k}<=${v[1]})`];
-          } else {
-            return [...pre, `${k} ${makeSQLFuzzy[k as keyOfStudent] ? `like "%${v.toString()}%"` : `= "${v.toString()}"`} `];
-          }
-        }, [] as ReadonlyArray<string>).join(' and ')
-      };`);
-  }, [makeSQL, makeSQLFuzzy, makeSQLRequire]);
+      entries(makeSQLRequire).reduce((pre, cur) => {
+        if (cur[1]) return [...pre, cur[0]];
+        else return pre;
+      }, [] as ReadonlyArray<string>).join(', ');
+    setSql(`SELECT ${SELECT_something} FROM ${tableName}${IndexedBy}${leftJoin}${WHERE_SQL}${LimitOFFET};`);
+    //--------------------SQL--------------------
+  }, [makeSQL, makeSQLFuzzy, makeSQLRequire, page, rowsPerPage, index]);
+  useUpdateEffect(() => {
+    waitLastEventLoop(() => buttonOnClick(getSql()));
+  }, [page, rowsPerPage]);
   const rows = SQLResultSetRowList?.rows;
   const columns = useMemo(() => {
     if (rows.length)
-      return Object.keys(rows.item(0) ?? {});
+      return Object.keys(rows.item(0) ?? {}).filter(i => columnsShow.includes(i));
     return [];
-  }, [rows]);
-  const [severity, setSeverity] = useSetState<{
-    readonly severity: AlertColor,
-    readonly text: string | DOMString;
-  }>({
+  }, [rows]) as ReadonlyArray<keyOfStudent>;
+  const [severity, setSeverity] = useSetState<AlertProps>({
     severity: 'info',
-    text: '待操作'
+    alertText: '待操作'
   });
-  const [open, setOpen] = useSafeState(false);
-  useUpdateEffect(() => {
-    setSeverity({
-      severity: 'success',
-      text: `执行成功, 查到 ${rows?.length} 条记录`
+  const { open } = useSnackBarTypedSelector(state => ({
+    open: state.SnackBar.open,
+  }));
+  useUpdateEffect(() => unstable_batchedUpdates(() => {
+    waitLastEventLoop(() => {
+      const obj: AlertProps = {
+        severity: 'success',
+        alertText: `执行成功, 查到 ${getCount() ?? rows?.length} 条记录`
+      };
+      setSeverity(obj);
+      if (!open)
+        dispatch({ type: enumActionName.OPENTRUE, payload: obj });
     });
-    setOpen(true);
-  }, [rows]);
-  const handleClose = (_event?: React.SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setOpen(false);
-  };
+  }), [rows]);
+  const [CRUDDialogOpen, setCRUDDialogOpen] = useSetState<{
+    readonly open: boolean;
+    readonly type: CRUDDialogProps['type'];
+    readonly dialogData: RecordOneRow;
+  }>({
+    open: false,
+    type: 'UD',
+    dialogData: rows.length ? rows.item(0) : {}
+  });
+  const { dialogData } = CRUDDialogOpen;
+  const WHERE_something = (dialogData: RecordOneRow) => idToNamePrimary.map(cur => {
+    const { id } = cur;
+    return `${id}=${dialogData[id]}`;
+  }).join(' AND ');
   if (loading || idToName.length === 0) {
     return <Skeleton
       className={style['Skeleton'] ?? ''}
@@ -200,151 +270,128 @@ export default function WebSQL () {
   }
   return <>
     <Paper elevation={24} className={style['Paper'] ?? ''}>
-      <Paper elevation={24} className={style['Input'] ?? ''}  >
-        {/* <Paper elevation={24}> */}
-        {idToName.map((i, index) => {
-          return <Paper elevation={24} key={index}
-            className={classNames({ [style['last'] ?? '']: i.type === 'between' }) ?? ''}
-          >
-            <Checkbox
-              onChange={(_e, c) => {
-                setMakeSQLRequire({
-                  [i.id]: c
-                } as RecordIdBool);
-              }}
-            />{(() => {
-              switch (i.type) {
-                case 'enum':
-                  return <FormControl fullWidth>
-                    <InputLabel>{i.name}</InputLabel>
-                    <Select
+      <Accordion
+        // defaultExpanded
+        elevation={24}>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+        >
+          <Typography>筛选器</Typography>
+        </AccordionSummary>
+        <AccordionDetails className={style['Input'] ?? ''}>
+          {idToName.map((i, index) => {
+            return <Paper elevation={24} key={index}
+              className={classNames({ [style['last'] ?? '']: i.type === 'between' }) ?? ''}
+            >
+              <Checkbox
+                onChange={(_e, c) => {
+                  setMakeSQLRequire({
+                    [i.id]: c
+                  } as RecordIdBool);
+                }}
+              />{(() => {
+                switch (i.type) {
+                  case 'enum': {
+                    return <SelectFromDB
                       fullWidth
-                      value={makeSQL[i.id]?.toString()}
-                      // defaultValue={allString}
                       label={i.name}
                       onChange={(e) => {
                         setMakeSQL({
                           [i.id]: e.target.value
                         });
-                      }}>
-                      <MenuItem value="">{allString}</MenuItem>
-                      {i.enum?.map(i => <MenuItem value={i}>{i}</MenuItem>)}
-                    </Select></FormControl>;
-                case 'between': {
-                  const arr = makeSQL[i.id];
-                  return <>
-                    <span>{i.name}</span>
-                    <Slider
-                      // getAriaLabel={() => 'Minimum distance shift'}
-                      value={Array.isArray(arr) ? arr : [0, 100]}
-                      onChange={(_event,
-                        newValue,
-                        activeThumb,) => {
-                        if (!Array.isArray(newValue)) {
-                          return;
-                        }
-                        const [v1, v2] = newValue;
-                        if (v1 !== undefined && v2 !== undefined)
-                          if (v2 - v1 < minDistance) {
-                            if (activeThumb === 0) {
-                              const clamped = Math.min(v1, 100 - minDistance);
-                              setMakeSQL({ [i.id]: [clamped, clamped + minDistance] });
-                            } else {
-                              const clamped = Math.max(v2, minDistance);
-                              setMakeSQL({ [i.id]: [clamped - minDistance, clamped] });
-                            }
-                          } else {
-                            setMakeSQL({ [i.id]: newValue });
+                      }}
+                      i={i}
+                    />;
+                  }
+                  case 'between': {
+                    const arr = makeSQL[i.id];
+                    return <>
+                      <span>{i.name}</span>
+                      <Slider
+                        min={i.min ?? 0}
+                        max={i.max ?? 100}
+                        step={i.step ?? 1}
+                        value={Array.isArray(arr) ? arr : [0, 100]}
+                        onChange={(_event,
+                          newValue,
+                          activeThumb,) => {
+                          if (!Array.isArray(newValue)) {
+                            return;
                           }
-
-                      }}
-                      valueLabelDisplay="on"
-                      // getAriaValueText={valuetext}
-                      disableSwap
-                    /></>;
+                          const [v1, v2] = newValue;
+                          if (v1 !== undefined && v2 !== undefined)
+                            if (v2 - v1 < minDistance) {
+                              if (activeThumb === 0) {
+                                const clamped = Math.min(v1, 100 - minDistance);
+                                setMakeSQL({ [i.id]: [clamped, clamped + minDistance] });
+                              } else {
+                                const clamped = Math.max(v2, minDistance);
+                                setMakeSQL({ [i.id]: [clamped - minDistance, clamped] });
+                              }
+                            } else {
+                              setMakeSQL({ [i.id]: newValue });
+                            }
+                        }}
+                        valueLabelDisplay="on"
+                        disableSwap
+                      /></>;
+                  }
+                  default:
+                    return <>
+                      <TextField
+                        // autoFocus
+                        aria-autocomplete="both"
+                        label={i.name}
+                        type={i.type === 'number' ? 'number' : "search"}
+                        onChange={(e) => {
+                          setMakeSQL({
+                            [i.id]: e.target.value
+                          });
+                        }}
+                      />
+                      <FormControlLabel
+                        control={<Checkbox />}
+                        label="模糊搜索"
+                        onChange={(_e, c) => setMakeSQLFuzzy({
+                          [i.id]: c
+                        } as RecordIdBool)}
+                      /></>;
                 }
-                default:
-                  return <>
-                    <TextField
-                      autoFocus
-                      // autoComplete=""
-                      aria-autocomplete="both"
-                      label={i.name}
-                      type={i.type === 'number' ? 'number' : "search"}
-                      value={makeSQL[i.id]}
-                      onChange={(e) => {
-                        setMakeSQL({
-                          [i.id]: e.target.value
-                        });
-                      }}
-                    // disabled={!makeSQLRequire[i.id]}
-                    // onChange={e => setMakeSQL({ Sid: Number(e.target.value) })}
-                    />
-                    <FormControlLabel
-                      control={<Checkbox />}
-                      label="模糊搜索"
-                      onChange={(_e, c) => setMakeSQLFuzzy({
-                        [i.id]: c
-                      } as RecordIdBool)}
-                    /></>;
-              }
-            })()}
-          </Paper>;
-        })}
-        {/* </Paper> */}
-        {/* <p>{`select ${makeSQLRequireArr.every(i => !Boolean(i)) ?
-          '*' :
-          Object.entries(makeSQLRequire).reduce((pre, cur) => {
-            if (cur[1])
-              return [...pre, cur[0]];
-            else
-              return pre;
-          }, [] as ReadonlyArray<string>).join(', ')
-          }`}</p>
-        <Button size='large' variant='contained'
-          onClick={() => {
-            if (sql)
-              db.transaction(tx => {
-                // for (let i of arr) {
-                // if (i)
-                tx.executeSql(sql, [], function (_tx, results) {
-                  const { rows } = results;
-                  if (rows.length > 0)
-                    setSQLResultSetRowList({
-                      rows
-                    });
-                  else
-                    setSQLResultSetRowList({
-                      insertId: results.insertId,
-                      rowsAffected: results.rowsAffected,
-                    });
-                });
-                // }
-              }, (e) => {
-                console.log(e);
-              }, () => {
-                console.log('success');
+              })()}
+            </Paper>;
+          })}
+        </AccordionDetails>
+      </Accordion>
+      <Accordion
+        elevation={24} className={style['sqlInput'] ?? ''}>
+        <AccordionSummary
+          expandIcon={<ExpandMoreIcon />}
+        >
+          <Typography>SQL执行</Typography>
+        </AccordionSummary>
+        <AccordionDetails className={style['AccordionDetails'] ?? ''}>
+          <TextField
+            multiline
+            autoFocus
+            fullWidth
+            aria-autocomplete="both"
+            label='SQL'
+            onChange={e => setSql(e.target.value)}
+            value={sql}
+          />
+          <Button size='large' variant='contained'
+            onClick={_e => {
+              setPage(pre => {
+                if (!pre)
+                  buttonOnClick(getSql());
+                return 0;
               });
-          }}
-        >查询</Button> */}
-      </Paper>
-      <Paper elevation={24} className={style['sqlInput'] ?? ''}>
-        {/* <Paper elevation={24}> */}
-        <TextField
-          multiline
-          autoFocus
-          fullWidth
-          aria-autocomplete="both"
-          label='SQL'
-          onChange={e => setSql(e.target.value)}
-          value={sql}
-        />
-        {/* </Paper> */}
-        <Button size='large' variant='contained'
-          onClick={_e => buttonOnClick(sql)}
-        >Transaction</Button>
-      </Paper>
-      <Paper elevation={24} className={style['fullWidth'] ?? ''}><Alert severity={severity.severity} variant="filled">{severity.text}</Alert></Paper>
+
+            }}
+          >Transaction</Button>
+        </AccordionDetails>
+      </Accordion>
+      <Paper elevation={24} className={style['fullWidth'] ?? ''}><Alert severity={severity.severity} variant="filled">{severity.alertText}</Alert></Paper>
       {/* <Paper elevation={24}>
         <Table>
           <TableBody>
@@ -356,75 +403,248 @@ export default function WebSQL () {
               <TableCell>影响行数</TableCell>
               <TableCell>{SQLResultSetRowList?.rowsAffected}</TableCell>
             </TableRow>
-            <TableRow>
-              <TableCell>结果长度</TableCell>
-              <TableCell>{rows?.length}</TableCell>
-            </TableRow>
           </TableBody>
         </Table>
       </Paper> */}
       <Paper elevation={24}>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              {columns.map((column, index) => (
-                <TableCell
-                  key={index}
-                  align='center'
-                >
-                  {column}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {
-              new Array(rows.length).fill(' ').map((_i, index) =>
-                <TableRow hover key={index}>
-                  {
-                    (columns.map((column, ind) => {
-                      return (
-                        <TableCell
-                          key={ind}
-                          align='center'
-                        >
-                          {rows?.item(index)[column]}
-                        </TableCell>
-                      );
-                    }))}
-                </TableRow>)
-            }
-            {/* {columns.map((row, index) =>
-          <TableRow hover key={index}>
-            {
-              (columns.map((column, ind) => {
-                return (
+        <TableContainer>
+          <Table stickyHeader>
+            <TableHead>
+              <TableRow>
+                {columns.map((column, index) => (
                   <TableCell
-                    key={ind}
+                    key={index}
                     align='center'
+                    title={column}
                   >
-                    {rows?.item(ind)}
+                    {idToNameRecord[column]?.name ?? column}
                   </TableCell>
-                );
-              }))}
-          </TableRow>
-        )} */}
-          </TableBody>
-          {/* <TableFooter>查询长度：{rows?.length}</TableFooter> */}
-        </Table>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {
+                new Array(rows.length).fill(' ').map((_i, index) =>
+                  <TableRow hover key={index}>
+                    {
+                      (columns.map((column, ind) => {
+                        const cur = idToNameRecord[column];
+                        const realDataKey = cur?.id;
+                        const dialogData: RecordOneRow = rows?.item(index);
+                        const hasEnum = cur?.enum;
+                        const value = dialogData[column];
+                        return (
+                          <TableCell
+                            {...(realDataKey && { title: String(dialogData[realDataKey]) })}
+                            key={ind}
+                            align='center'
+                            {...(idToNameRecord[column]?.primary && {
+                              onClick: () => {
+                                setCRUDDialogOpen({
+                                  open: true,
+                                  type: 'UD',
+                                  dialogData
+                                });
+                              },
+                              className: style['aLink'] ?? ''
+                            })}
+                          >
+                            {(hasEnum && isVavid(value)) ? hasEnum[Number(value)] : value}
+                          </TableCell>
+                        );
+                      }))}
+                  </TableRow>)
+              }
+            </TableBody>
+            {/* <TableFooter>
+              <TableRow>
+                <TableCell colSpan={columnsShow.length} className={style['TableFooter'] ?? ''}></TableCell>
+              </TableRow>
+            </TableFooter> */}
+          </Table>
+        </TableContainer>
+        <TablePagination
+          component="div"
+          count={count ?? rows?.length ?? 10}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={(_event, newPage) => {
+            setPage(newPage);
+          }}
+          onRowsPerPageChange={(event) => unstable_batchedUpdates(() => {
+            setRowsPerPage(+event.target.value);
+            setPage(0);
+          })}
+          labelDisplayedRows={(paginationInfo) => `${paginationInfo.from}-${isNaN(paginationInfo.to) ? 1 : paginationInfo.to}/共${paginationInfo.count ?? 0}项`}
+          labelRowsPerPage='每页行数：'
+        />
       </Paper>
+      <Paper elevation={24}>
+        <Fab color="primary" size='large' onClick={() => unstable_batchedUpdates(() => {
+          setCRUDDialogOpen({
+            open: true,
+            type: 'C',
+            dialogData: idToName.reduce((pre, cur) => {
+              pre[cur.id] = '';
+              return pre;
+            }, {} as RecordOneRow)
+          });
+        })}>
+          <AddIcon />
+        </Fab></Paper>
     </Paper>
-    <Snackbar open={Boolean(open && severity.text)}
-      autoHideDuration={3e3}
-      onClose={handleClose}
-      message={severity.text}
-      className={style['Snackbar'] ?? ""}
-    >
-      <Alert
-        onClose={handleClose}
-        severity={severity.severity}
-        variant="filled"
-      >{severity.text}</Alert >
-    </Snackbar>
+    <CRUDDialog
+      onClose={() => setCRUDDialogOpen({ open: false })}
+      className={style['dialog'] ?? ''}
+      {...CRUDDialogOpen}
+      dialogDataProps={dialogData}
+      {...{
+        idToNameRecord,
+        idToNameKeys,
+        idToNamePrimary,
+        idToName,
+        comfirm: (code) => unstable_batchedUpdates(() => {
+          setSql(code);
+          buttonOnClick(`${code};${initSQL}`);
+          setCRUDDialogOpen({ open: false });
+        }),
+        //--------------------SQL--------------------
+        modifySQL: ((dialogData) => {
+          console.log(dialogData);
+
+          const SET_something = entries(dialogData).filter(([k]) => idToNameKeys.includes(k as keyOfStudent) && !idToNameRecord[k]?.primary).map(([k, v]) => `${k}=${(!isVavid(v)) ? 'null' : (isTypeNumber(idToNameRecord[k]) ? v : `'${v}'`)}`
+          ).join(', ');
+          return `UPDATE ${tableName} SET ${SET_something} WHERE ${WHERE_something(dialogData)};`;
+        }),
+        deleteSQL: ((dialogData) => {
+          return `DELETE FROM ${tableName} WHERE ${WHERE_something(dialogData)};`;
+        }),
+        insertSQL: ((dialogData) => {
+          const hasValue = entries(dialogData).filter(([k, v]) => isVavid(v) && idToNameKeys.includes(k as keyOfStudent));
+          const keyOfIdToNamePrimary = idToNamePrimary.map(i => i.id);
+          const keyOfHasValue = hasValue.map(([k]) => k);
+          if (keyOfIdToNamePrimary.some(i => !keyOfHasValue.includes(i))) {
+            dispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `还有必填项未填写`, [enumSnackbarAlert.severity]: enumSeverity.warning } });
+            return '';
+          }
+          const INSERT_where = hasValue.map(([k]) => k).join(', ');
+          const INSERT_value = hasValue.map(([k, v]) => `${isTypeNumber(idToNameRecord[k]) ? v : `'${v}'`}`).join(', ');
+          return `INSERT INTO ${tableName} (${INSERT_where}) VALUES (${INSERT_value});`;
+        }),
+        //--------------------SQL--------------------
+      }}
+    />
   </>;
 }
+interface CRUDDialogProps extends DialogProps {
+  readonly type: 'C' | 'UD';
+  readonly dialogDataProps: RecordOneRow;
+  readonly idToNameRecord: Record<keyOfStudent, idToNameOne>;
+  readonly idToNameKeys: ReadonlyArray<keyOfStudent>;
+  readonly comfirm: (e: string) => void;
+  readonly modifySQL: (dialogData: RecordOneRow) => string;
+  readonly deleteSQL: (dialogData: RecordOneRow) => string;
+  readonly idToName: ReadonlyArray<idToNameOne>;
+  readonly idToNamePrimary: ReadonlyArray<idToNameOne>;
+  readonly insertSQL: (dialogData: RecordOneRow) => string;
+}
+const CRUDDialog = (props: CRUDDialogProps) => {
+  const { type: typeProps, dialogDataProps, idToNameRecord, idToNameKeys, modifySQL, deleteSQL, comfirm, idToNamePrimary, insertSQL, idToName, ...others } = props;
+  const [dialogData, setDialogData] = useSetState<RecordOneRow>(dialogDataProps);
+  const [confirmDialog, setComfirmDialog] = useSetState({
+    open: false,
+    text: '',
+    code: '',
+  }); const isUD = typeProps === 'UD';
+
+  useEffect(() => {
+    setDialogData(dialogDataProps);
+  }, [dialogDataProps, open]);
+  const setComfirmDialogClose = () => {
+    setComfirmDialog({
+      open: false,
+    });
+  };
+  const textFieldProps = (v: string | number, primary: boolean | undefined) => (isUD ? { defaultValue: v, disabled: Boolean(primary) } : { required: Boolean(primary) });
+  return <>
+    <Dialog
+      {...others}
+    >
+      {entries(dialogData ?? {}).filter(([k]) => idToNameKeys.includes(k as keyOfStudent)).map(([k, v], index) => {
+        const i = idToNameRecord[k as keyOfStudent];
+        const type = i?.type;
+        const isNumber = isTypeNumber(i);
+        const primary = i.primary;
+        if (i && type === 'enum')
+          return <SelectFromDB
+            key={index}
+            i={i}
+            {...textFieldProps(v, primary)}
+            label={k}
+            onChange={(e) => {
+              const { value } = e.target;
+              setDialogData({
+                [k]: value
+              } as RecordOneRow);
+            }}
+          />;
+        return <TextField
+          aria-autocomplete="both"
+          label={k}
+          type={isNumber ? 'number' : "search"}
+          {...textFieldProps(v, primary)}
+          key={index}
+          onChange={(e) => {
+            const { value } = e.target;
+            // if (value !== null)
+            setDialogData({
+              [k]: value
+            } as RecordOneRow);
+          }}
+        />;
+      })}
+      {isUD ? <><Button size="large" variant="contained" onClick={() => {
+        setComfirmDialog({
+          open: true,
+          text: '确认修改？',
+          code: modifySQL(dialogData)
+        });
+      }}>修改</Button>
+        <Button size="large" variant="outlined" color="error" onClick={() => {
+          setComfirmDialog({
+            open: true,
+            text: '确认删除？',
+            code: deleteSQL(dialogData)
+          });
+        }}>删除</Button></> : <Button size="large" variant="contained" onClick={() => {
+          const sql = insertSQL(dialogData);
+          if (sql)
+            setComfirmDialog({
+              open: true,
+              text: '确认新增？',
+              code: sql,
+            });
+        }}>新增</Button>}
+    </Dialog>
+    <Dialog open={confirmDialog.open} onClose={setComfirmDialogClose} className={style['dialog'] ?? ''}>
+      <h1>{confirmDialog.text}</h1>
+      <TextField
+        defaultValue={confirmDialog.code}
+        onChange={e => setComfirmDialog({
+          code: e.target.value
+        })}
+        autoFocus
+        aria-autocomplete="both"
+        label='sql'
+        type="search"
+        multiline
+        fullWidth
+      />
+      <Button size="large" variant="outlined" color="warning" onClick={() => {
+        comfirm(confirmDialog.code);
+        setComfirmDialogClose();
+      }}>确认</Button>
+      <Button size="large" variant="contained" onClick={setComfirmDialogClose}>取消</Button>
+    </Dialog>
+  </>;
+};

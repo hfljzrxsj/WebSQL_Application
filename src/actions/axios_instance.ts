@@ -1,77 +1,69 @@
-import { concatUrl, pathString } from "@/Route";
-import axios, { type AxiosRequestConfig } from "axios";
-import { redirect } from 'react-router';
-export const successCode = 1000;
-export const adminIdString = 'adminId';
-export const Authorization = 'Authorization';
-export const orgId = 'orgId';
+import axios from "axios";
+// export const successCode = 1000;
+// export const adminIdString = 'adminId';
+// export const Authorization = 'Authorization';
+// export const orgId = 'orgId';
 const defaults = axios.defaults;
-export const { common } = defaults.headers;
+// const { common } = defaults.headers;
 const source = axios.CancelToken.source();
 const errorAction = () => {
-  localStorage.removeItem(Authorization);
-  redirect(concatUrl(pathString.login));
+  // localStorage.removeItem(Authorization);
+  // redirect(concatUrl(pathString.login));
   // window.location.href = `#${concatUrl(pathString.login)}`;
 };
-defaults.baseURL = import.meta.env.VITE_baseURL;
+// defaults.baseURL = import.meta.env.VITE_baseURL;
 defaults.withCredentials = false;
-common[Authorization] ??= localStorage.getItem(Authorization) ?? '';
-common[adminIdString] ??= localStorage.getItem(adminIdString) ?? '';
-export const getLocalStorageFromJSON = (s: string, backup?: string) => {
-  try {
-    const getJWT = localStorage.getItem(Authorization) ?? backup;
-    if (!getJWT)
-      return '';
-    return String(JSON.parse((atob(getJWT.split('.')?.[1] ?? '')))?.[s]);
-  }
-  catch (e) {
-    console.error(e);
-    return '';
-  }
-};
-export const level = 'level';
-export const getLevel = (backup?: string) => getLocalStorageFromJSON(level, backup);
-common[level] ??= getLevel();
-common[orgId] ??= getLocalStorageFromJSON(orgId);
+// export const getLocalStorageFromJSON = (s: string, backup?: string) => {
+//   try {
+//     const getJWT = localStorage.getItem(Authorization) ?? backup;
+//     if (!getJWT)
+//       return '';
+//     return String(JSON.parse((atob(getJWT.split('.')?.[1] ?? '')))?.[s]);
+//   }
+//   catch (e) {
+//     console.error(e);
+//     return '';
+//   }
+// };
 const controller = new AbortController();
 defaults.signal = controller.signal;
 defaults.cancelToken = source.token;
-const cacheStorage = window.caches;
-const { adapter } = defaults;
-export const stringify = (e: unknown) => {
-  try {
-    return JSON.stringify(e);
-  }
-  catch (e) {
-    console.error(e);
-    return '';
-  }
-};
-const createCacheKey = ({ url, headers, params, data }: Pick<AxiosRequestConfig, 'url' | 'headers' | 'params' | 'data'>
-) => ([url, headers?.[Authorization], headers?.[adminIdString], headers?.[level], stringify(params), stringify(data)].join('_'));
-if (adapter && typeof adapter === 'function') {
-  defaults.adapter = async (req) => {
-    if (!cacheStorage) {
-      return adapter(req);
-    }
-    const { url = '', headers = {}, params, data } = req;
-    console.log('请求', url, params, data);
-    const cacheKey = createCacheKey({ url, headers, params, data });
-    const cache = await cacheStorage?.open(url);
-    const cacheRes = await cache?.match(cacheKey);
-    if (cacheRes) {
-      const resJson = await cacheRes.json();
-      // if (stringify(resJson)) {
-      return resJson;
-      // }
-    }
-    const res = await adapter(req);
-    const { status, data: resData } = res;
-    if (status === 200 && typeof resData === 'string' && resData.includes(String(successCode)))
-      await cache?.put(cacheKey, new Response(stringify(res)));
-    return res;
-  };
-}
+// const cacheStorage = window.caches;
+// const { adapter } = defaults;
+// export const stringify = (e: unknown) => {
+//   try {
+//     return JSON.stringify(e);
+//   }
+//   catch (e) {
+//     console.error(e);
+//     return '';
+//   }
+// };
+// const createCacheKey = ({ url, headers, params, data }: Pick<AxiosRequestConfig, 'url' | 'headers' | 'params' | 'data'>
+// ) => ([url, headers?.[Authorization], headers?.[adminIdString], headers?.[level], stringify(params), stringify(data)].join('_'));
+// if (adapter && typeof adapter === 'function') {
+//   defaults.adapter = async (req) => {
+//     if (!cacheStorage) {
+//       return adapter(req);
+//     }
+//     const { url = '', headers = {}, params, data } = req;
+//     console.log('请求', url, params, data);
+//     const cacheKey = createCacheKey({ url, headers, params, data });
+//     const cache = await cacheStorage?.open(url);
+//     const cacheRes = await cache?.match(cacheKey);
+//     if (cacheRes) {
+//       const resJson = await cacheRes.json();
+//       // if (stringify(resJson)) {
+//       return resJson;
+//       // }
+//     }
+//     const res = await adapter(req);
+//     const { status, data: resData } = res;
+//     if (status === 200 && typeof resData === 'string' && resData.includes(String(successCode)))
+//       await cache?.put(cacheKey, new Response(stringify(res)));
+//     return res;
+//   };
+// }
 // export const axios_instance = axios.create({
 //   baseURL: import.meta.env.VITE_baseURL,
 //   // timeout: 20000,
@@ -95,7 +87,7 @@ axios.interceptors.request.use(
 
 axios.interceptors.response.use(
   async (res) => {
-    if (res.data.code === 1003) {
+    if (res.status === 401) {
       errorAction();
     }
     // if (!cacheStorage)

@@ -149,26 +149,26 @@ export default defineConfig({
         //   // 'path': 'https://cdn.bootcdn.net/ajax/libs/material-ui/4.12.4/umd/material-ui.development.js'
         //   // 'path': '//unpkg.com/@material-ui/core/umd/material-ui.production.min.js'
         // },
-        // {
-        //   'name': 'redux',
-        //   'var': 'Redux',
-        //   'path': '//cdn.bootcdn.net/ajax/libs/redux/4.2.1/redux.min.js'
-        // },
-        // {
-        //   'name': 'react-redux',
-        //   'var': 'ReactRedux',
-        //   'path': '//cdn.bootcdn.net/ajax/libs/react-redux/8.0.5/react-redux.min.js'
-        // },
-        // {
-        //   'name': 'redux-thunk',
-        //   'var': 'ReduxThunk',
-        //   'path': '//cdn.bootcdn.net/ajax/libs/redux-thunk/2.4.2/redux-thunk.min.js'
-        // },
-        // {
-        //   'name': 'axios',
-        //   'var': 'axios',
-        //   'path': '//cdn.bootcdn.net/ajax/libs/axios/1.3.6/axios.min.js'
-        // },
+        {
+          'name': 'redux',
+          'var': 'Redux',
+          'path': '//cdn.bootcdn.net/ajax/libs/redux/4.2.1/redux.min.js'
+        },
+        {
+          'name': 'react-redux',
+          'var': 'ReactRedux',
+          'path': '//cdn.bootcdn.net/ajax/libs/react-redux/8.0.5/react-redux.min.js'
+        },
+        {
+          'name': 'redux-thunk',
+          'var': 'ReduxThunk',
+          'path': '//cdn.bootcdn.net/ajax/libs/redux-thunk/2.4.2/redux-thunk.min.js'
+        },
+        {
+          'name': 'axios',
+          'var': 'axios',
+          'path': '//cdn.bootcdn.net/ajax/libs/axios/1.3.6/axios.min.js'
+        },
         // {
         //   'name': 'prop-types',
         //   'var': 'PropTypes',

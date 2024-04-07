@@ -2,60 +2,16 @@ import Menu from "@/components/Menu";
 import { Paper } from "@mui/material";
 import { StrictMode } from "react";
 import style from './_index.module.scss';
+import { waitOnLoadEventLoop } from "@/utils";
 const commonProps = { elevation: 24, className: style['Paper'] ?? '' };
-export const documentTitle = '进销存管理系统';
+export const documentTitle = 'WebSQL';
 const {
   addEventListener,
-  queueMicrotask,
-  setTimeout,
-  Promise,
-  requestIdleCallback,
-  requestAnimationFrame,
   document,
   navigator,
   Object,
-  console,
-  MessageChannel
-} = window ?? self ?? globalThis ?? this;
-// addEventListener?.('DOMContentLoaded', () => {
-// addEventListener?.('load', () =>
-//   queueMicrotask?.(() =>
-//     setTimeout?.(() =>
-//       Promise?.resolve?.()?.then?.(() =>
-//         requestAnimationFrame?.(() =>
-//           requestIdleCallback?.(() =>
-//             document.title = documentTitle
-//           )
-//         )
-//       )
-//     )
-//   )
-// );
-const callbackEventLoop = (callback: () => void) => {
-  const cb = (resolve: () => void) =>
-    requestIdleCallback?.(() =>
-      setTimeout?.(() =>
-        requestAnimationFrame?.(() =>
-          queueMicrotask(() =>
-            Promise?.resolve?.()?.then?.(() => {
-              const { port1, port2 } = new MessageChannel();
-              port2.onmessage = () => resolve();
-              port1.postMessage(null);
-            }
-            ).catch(console.error)
-          )
-        )
-      )
-    );
-  addEventListener?.('load', () =>
-    new Promise<void>(resolve =>
-      cb?.(resolve)
-    )?.then?.(() =>
-      cb?.(callback)
-    ).catch(console.error)
-  );
-};
-callbackEventLoop(() => document.title = documentTitle);
+  console } = window ?? self ?? globalThis ?? global ?? this;
+waitOnLoadEventLoop(() => document.title = documentTitle);
 //requestIdleCallback setTimeout requestAnimationFrame Promise queueMicrotask
 // });
 (() => {

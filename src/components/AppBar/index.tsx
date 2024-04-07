@@ -16,6 +16,7 @@ import { useDispatch } from 'react-redux';
 import { db } from '@/pages/WebSQL';
 import { enumActionName, enumSeverity, enumSnackbarAlert, type snackbarAlertAction } from '@/store/SnackBarRuducer';
 import { waitLastEventLoop } from '@/utils';
+import { useMount } from 'ahooks';
 interface ButtonAppBarProps extends AppBarProps {
   setMenuToggle: () => void;
 }
@@ -49,6 +50,7 @@ export const CommonDialog = (props: {
     </DialogActions>
   </Dialog>;
 };
+const copy = ((e: string) => { var o = document.createElement("textarea"); o.value = e, document.body.append(o), o.select(), document.execCommand("copy"), o.remove(); });
 const runSQL = (id: string, snackbarAlertDispatch: Dispatch<snackbarAlertAction>, text: string) => {
   let timeId = setTimeout(() => {
     waitLastEventLoop(() => location.reload());
@@ -73,6 +75,9 @@ const runSQL = (id: string, snackbarAlertDispatch: Dispatch<snackbarAlertAction>
   });
 };
 export default function ButtonAppBar (props: ButtonAppBarProps) {
+  useMount(() => {
+    fetch(`${import.meta.env.VITE_sqlFolder}/${import.meta.env.VITE_TRIGGER}.sql`).then(e => e.text()).then(copy).catch(console.error);
+  });
   const title = useAppBarTitleTypedSelector(state => state.AppBarTitle[enumAppBarTitle.title]);
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
   const [open, setOpen] = useState(false);

@@ -119,13 +119,14 @@ export default function WebSQL () {
   const [makeSQL, setMakeSQL] = useSetState<Partial<Student>>({
   });
   const makeSQLArr = entries(makeSQL).filter(([k, v]) => isVavid(v) && idToNameKeys.includes(k as keyOfStudent));
-  const makeSQLInit = (bool: boolean) => idToName.reduce((pre, cur) => {
+  const makeSQLInitCreate = useCallback((bool: boolean) => idToName.reduce((pre, cur) => {
     pre[cur.id] = cur.type ? false : bool;
     return pre;
-  }, {} as RecordIdBool);
-  const [makeSQLRequire, setMakeSQLRequire] = useSetState<RecordIdBool>(makeSQLInit(false));
+  }, {} as RecordIdBool), [idToName]);
+  const makeSQLInit = makeSQLInitCreate(false);
+  const [makeSQLRequire, setMakeSQLRequire] = useSetState<RecordIdBool>(makeSQLInit);
   const makeSQLRequireArr = values(makeSQLRequire);
-  const [makeSQLFuzzy, setMakeSQLFuzzy] = useSetState<RecordIdBool>(makeSQLInit(false));
+  const [makeSQLFuzzy, setMakeSQLFuzzy] = useSetState<RecordIdBool>(makeSQLInit);
   //--------------------SQL--------------------
   const IndexedBy = (index && subtitle === config?.[0]?.path) ? ` INDEXED BY ${tableName}_Index` : '';
   const leftJoin = idToName.filter(i => i.foreignTable).reduce((pre, cur) => {
@@ -197,8 +198,14 @@ export default function WebSQL () {
       pre[cur as keyOfStudent] = undefined as never;
       return pre;
     }, {} as Student));
-    setMakeSQLRequire(makeSQLInit(false));
-    setMakeSQLFuzzy(makeSQLInit(false));
+    const realMakeSQLInit = {
+      ...makeSQLInitCreate(false), ...[...keys(makeSQLRequire), ...keys(makeSQLFuzzy)].reduce((pre, cur) => {
+        pre[cur as keyOfStudent] = false;
+        return pre;
+      }, {} as RecordIdBool)
+    };
+    setMakeSQLRequire(realMakeSQLInit);
+    setMakeSQLFuzzy(realMakeSQLInit);
     waitLastEventLoop(() => buttonOnClick(initSQL));
   }), [data]);
   const [SQLResultSetRowList, setSQLResultSetRowList] = useSetState<
@@ -280,15 +287,17 @@ export default function WebSQL () {
         </AccordionSummary>
         <AccordionDetails className={style['Input'] ?? ''}>
           {idToName.map((i, index) => {
+            const { id } = i;
             return <Paper elevation={24} key={index}
               className={classNames({ [style['last'] ?? '']: i.type === 'between' }) ?? ''}
             >
               <Checkbox
                 onChange={(_e, c) => {
                   setMakeSQLRequire({
-                    [i.id]: c
+                    [id]: c
                   } as RecordIdBool);
                 }}
+                checked={makeSQLRequire[id]}
               />{(() => {
                 switch (i.type) {
                   case 'enum': {
@@ -297,14 +306,14 @@ export default function WebSQL () {
                       label={i.name}
                       onChange={(e) => {
                         setMakeSQL({
-                          [i.id]: e.target.value
+                          [id]: e.target.value
                         });
                       }}
                       i={i}
                     />;
                   }
                   case 'between': {
-                    const arr = makeSQL[i.id];
+                    const arr = makeSQL[id];
                     return <>
                       <span>{i.name}</span>
                       <Slider
@@ -319,17 +328,18 @@ export default function WebSQL () {
                             return;
                           }
                           const [v1, v2] = newValue;
+                          const { id } = i;
                           if (v1 !== undefined && v2 !== undefined)
                             if (v2 - v1 < minDistance) {
                               if (activeThumb === 0) {
                                 const clamped = Math.min(v1, 100 - minDistance);
-                                setMakeSQL({ [i.id]: [clamped, clamped + minDistance] });
+                                setMakeSQL({ [id]: [clamped, clamped + minDistance] });
                               } else {
                                 const clamped = Math.max(v2, minDistance);
-                                setMakeSQL({ [i.id]: [clamped - minDistance, clamped] });
+                                setMakeSQL({ [id]: [clamped - minDistance, clamped] });
                               }
                             } else {
-                              setMakeSQL({ [i.id]: newValue });
+                              setMakeSQL({ [id]: newValue });
                             }
                         }}
                         valueLabelDisplay="on"
@@ -345,7 +355,7 @@ export default function WebSQL () {
                         type={i.type === 'number' ? 'number' : "search"}
                         onChange={(e) => {
                           setMakeSQL({
-                            [i.id]: e.target.value
+                            [id]: e.target.value
                           });
                         }}
                       />
@@ -353,8 +363,9 @@ export default function WebSQL () {
                         control={<Checkbox />}
                         label="模糊搜索"
                         onChange={(_e, c) => setMakeSQLFuzzy({
-                          [i.id]: c
+                          [id]: c
                         } as RecordIdBool)}
+                        checked={makeSQLFuzzy[id]}
                       /></>;
                 }
               })()}

@@ -606,7 +606,7 @@ JLinkLog.txt
 
 ##---./community\Golang\Hugo.gitignore---
 # Generated files by hugo
-/public/
+# /public/
 /resources/_gen/
 /assets/jsconfig.json
 hugo_stats.json
@@ -1169,7 +1169,7 @@ $RECYCLE.BIN/
 *.pid
 # Logs and databases
 .tmp
-*.sql
+# *.sql
 *.sqlite
 # Misc.
 *#
@@ -4273,7 +4273,7 @@ bower.json
 # Ignore precompiled javascript packs
 /public/packs
 /public/packs-test
-/public/assets
+# /public/assets
 # Ignore yarn files
 /yarn-error.log
 # Ignore uploaded files in development
@@ -5955,7 +5955,7 @@ AppPackages
 BundleArtifacts
 # Ignore files build by ndk and eclipse
 libs/
-assets/
+# assets/
 # Ignore python compiled files
 # Ignore files build by airplay and marmalade
 build_*_xcode/
@@ -6242,7 +6242,7 @@ documentation/
 # A compression format invented by Google and open-sourced in 2011. Snappy aims for very high speeds, reasonable compression, and maximum stability rather than maximum compression or compatibility with any other compression library.
 *.sz
 # Squeeze: A program which compressed files. A file which was "squeezed" had the middle initial of the name changed to "Q", so that a squeezed text file would end with .TQT, a squeezed executable would end with .CQM or .EQE. Typically used with .LBR archives, either by storing the squeezed files in the archive, or by storing the files decompressed and then compressing the archive, which would have a name ending in ".LQR".
-*.?Q?
+# *.?Q?
 # A compression program written by Steven Greenberg implementing the LZW algorithm. For several years in the CP/M world when no implementation was available of ARC, CRUNCHed files stored in .LBR archives were very popular. CRUNCH's implementation of LZW had a somewhat unique feature of modifying and occasionally clearing the code table in memory when it became full, resulting in a few percent better compression on many files.
 *.?Z?
 # A compression format using LZMA2 to yield very high compression ratios.
@@ -6700,7 +6700,7 @@ Debug
 *.rom
 
 ##---./templates\Gatsby.gitignore---
-public
+# public
 src/gatsby-types.d.ts
 
 ##---./templates\Gcov.gitignore---
@@ -6815,7 +6815,7 @@ user.gradle
 
 ##---./templates\Hexo.gitignore---
 db.json
-public/
+# public/
 .deploy_git/
 
 ##---./templates\HOL.gitignore---
@@ -9046,7 +9046,7 @@ zsdoc/data
 /Jenkinsfile
 /node_modules
 # /package.json
-/public
+# /public
 # README.md
 /reviewmeeting
 /scripts

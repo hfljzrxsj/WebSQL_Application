@@ -1,11 +1,10 @@
 DROP TABLE IF EXISTS GradeLog;
-CREATE TABLE IF NOT EXISTS GradeLog(
-student_id INT REFERENCES Students(student_id),
-course_id INT REFERENCES Course(course_id),
-score_old INT,
-score_new INT,
-log_time TIMESTAMP UNIQUE NOT NULL,
-    PRIMARY KEY (student_id,course_id,log_time),
+CREATE TABLE IF NOT EXISTS GradeLog (
+    student_id INT REFERENCES Students(student_id),
+    course_id  INT REFERENCES Course(course_id),
+    score_old  INT,
+    score_new  INT,
+    log_time   TIMESTAMP UNIQUE NOT NULL,
     FOREIGN KEY (student_id) REFERENCES Students(student_id),
     FOREIGN KEY (course_id) REFERENCES Course(course_id)
 );

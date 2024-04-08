@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, Alert, Button, Checkbox, Dialog, Fab, FormControl, FormControlLabel, InputLabel, MenuItem, Paper, Select, Skeleton, Slider, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Typography, type AlertColor, type DialogProps, type SelectProps } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Button, Checkbox, Dialog, Fab, FormControl, FormControlLabel, InputLabel, MenuItem, Paper, Select, Skeleton, Slider, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Typography, type AlertColor, type DialogProps, type FormControlProps, type SelectProps } from "@mui/material";
 import type { WindowDatabase, SQLResultSet, DOMString, SQLResultSetRowList } from "./type";
 import { useGetState, useRequest, useSafeState, useSetState, useThrottleFn, useUpdateEffect } from "ahooks";
 import { useCallback, useEffect, useMemo, type Dispatch } from "react";
@@ -36,7 +36,8 @@ export const db = that.openDatabase(name, version, displayName, estimatedSize, (
   console.log('sucess', e, 'version', e.version);
 });
 const allString = '未选择';
-interface SelectFromDB extends SelectProps {
+type unionProps = SelectProps & FormControlProps;
+interface SelectFromDB extends unionProps {
   readonly i: idToNameOne;
 }
 const SelectFromDB = (props: SelectFromDB) => {
@@ -55,7 +56,7 @@ const SelectFromDB = (props: SelectFromDB) => {
         console.log('success');
       });
   }, [foreignTable, foreignKey]);
-  return <FormControl fullWidth>
+  return <FormControl fullWidth {...others}>
     <InputLabel>{i.name}</InputLabel><Select
       fullWidth
       {...others}
@@ -307,9 +308,13 @@ export default function WebSQL () {
                       fullWidth
                       label={i.name}
                       onChange={(e) => {
-                        setMakeSQL({
-                          [id]: e.target.value
-                        });
+                        const { target } = e;
+                        if ('value' in target) {
+                          const value = target['value'];
+                          setMakeSQL({
+                            [id]: value
+                          });
+                        }
                       }}
                       i={i}
                     />;
@@ -595,10 +600,13 @@ const CRUDDialog = (props: CRUDDialogProps) => {
             {...textFieldProps(v, primary)}
             label={k}
             onChange={(e) => {
-              const { value } = e.target;
-              setDialogData({
-                [k]: value
-              } as RecordOneRow);
+              const { target } = e;
+              if ('value' in target) {
+                const value = target['value'];
+                setDialogData({
+                  [k]: value
+                } as RecordOneRow);
+              }
             }}
           />;
         return <TextField

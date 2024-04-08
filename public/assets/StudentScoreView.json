@@ -1,0 +1,1 @@
+[ { "id": "student_id", "name": "学号", "type": "number", "primary": true }, { "id": "student_name", "name": "姓名" }, { "id": "college_name", "name": "学院" }, { "id": "class_name", "name": "班级" }, { "id": "Count", "name": "课程数", "type": "number" }, { "id": "AvgScore", "name": "加权学分绩" }, { "id": "SumScore", "name": "总学分绩" }, { "id": "Sum_credit_hours", "name": "总学分" } ]

@@ -1053,6 +1053,7 @@
     "@types/yargs-parser": "21.0.0",
     "@types/yargs": "17.0.24",
     "@types/yauzl": "2.10.0",
+    "@types/clipboardy": "2.0.1",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/experimental-utils": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
@@ -4079,7 +4080,8 @@
     "sass": "^1.63.6",
     "sass-loader": "^12.6.0",
     "scss-bundle": "^3.1.2",
-    "node-sass": "9.0.0"
+    "node-sass": "9.0.0",
+    "copy-text-to-clipboard": "^3.2.0"
   },
   "devDependencies": {
     "coffee-script": "^1.10.0",

@@ -5,7 +5,7 @@ course_id INT REFERENCES Course(course_id),
 score_old INT,
 score_new INT,
 log_time TIMESTAMP UNIQUE NOT NULL,
-    PRIMARY KEY (student_id,course_id),
+    PRIMARY KEY (student_id,course_id,log_time),
     FOREIGN KEY (student_id) REFERENCES Students(student_id),
     FOREIGN KEY (course_id) REFERENCES Course(course_id)
 );

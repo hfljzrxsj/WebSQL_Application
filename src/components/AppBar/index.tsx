@@ -4,7 +4,7 @@ import style from './_index.module.scss';
 import { enumAppBarTitle, useAppBarTitleTypedSelector } from '@/store/AppBarTitleRuducer';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { StrictMode, useContext, useState, type Dispatch } from 'react';
+import { StrictMode, useCallback, useContext, useState, type Dispatch } from 'react';
 import { unstable_batchedUpdates } from 'react-dom';
 import { useParams } from 'react-router';
 import * as classNames from 'classnames';
@@ -17,6 +17,9 @@ import { db } from '@/pages/WebSQL';
 import { enumActionName, enumSeverity, enumSnackbarAlert, type snackbarAlertAction } from '@/store/SnackBarRuducer';
 import { waitLastEventLoop } from '@/utils';
 import { useMount } from 'ahooks';
+import copy from 'copy-text-to-clipboard';
+// import clipboard from 'clipboardy';
+const { error } = console;
 interface ButtonAppBarProps extends AppBarProps {
   setMenuToggle: () => void;
 }
@@ -50,7 +53,7 @@ export const CommonDialog = (props: {
     </DialogActions>
   </Dialog>;
 };
-const copy = ((e: string) => { var o = document.createElement("textarea"); o.value = e, document.body.append(o), o.select(), document.execCommand("copy"), o.remove(); });
+// const copy = ((e: string) => { var o = document.createElement("textarea"); o.value = e, document.body.append(o), o.select(), document.execCommand("copy"), o.remove(); });
 const runSQL = (id: string, snackbarAlertDispatch: Dispatch<snackbarAlertAction>, text: string) => {
   let timeId = setTimeout(() => {
     waitLastEventLoop(() => location.reload());
@@ -74,9 +77,38 @@ const runSQL = (id: string, snackbarAlertDispatch: Dispatch<snackbarAlertAction>
     });
   });
 };
+const copyFetch = (dispatch: Dispatch<DBAction>) => fetch(`${import.meta.env.VITE_sqlFolder}/${import.meta.env.VITE_TRIGGER}.sql`).then(e => e.text()).then(t => {
+  dispatch({
+    type: DBEnumActionName.SET,
+    payload: {
+      'TRIGGER': t,
+    },
+  });
+  return t ?? '';
+}).then(copy
+  // e => {
+  // clipboard.write(e);
+  // copy(e);
+  // }
+  , error).catch(error);
 export default function ButtonAppBar (props: ButtonAppBarProps) {
+  const dispatch = useDispatch<Dispatch<DBAction>>();
+  const snackbarAlertDispatch = useDispatch<Dispatch<snackbarAlertAction>>();
+  const { index, config, TRIGGER } = useDBTypedSelector(state => ({
+    index: state.DB[enumDB.index],
+    config: state.DB[enumDB.config],
+    TRIGGER: state.DB[enumDB.TRIGGER]
+  }));
+  const copyAction = useCallback(() => {
+    if (!TRIGGER)
+      return copyFetch(dispatch);
+    else {
+      copy(TRIGGER);
+      return Promise.resolve();
+    };
+  }, [TRIGGER, dispatch]);
   useMount(() => {
-    fetch(`${import.meta.env.VITE_sqlFolder}/${import.meta.env.VITE_TRIGGER}.sql`).then(e => e.text()).then(copy).catch(console.error);
+    waitLastEventLoop(copyAction);
   });
   const title = useAppBarTitleTypedSelector(state => state.AppBarTitle[enumAppBarTitle.title]);
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
@@ -89,12 +121,6 @@ export default function ButtonAppBar (props: ButtonAppBarProps) {
   const matches = useContext(MediaQueryContext);
   const [menuOpen, setMenuOpen] = useState(false);
   const { subtitle, id } = useParams();
-  const dispatch = useDispatch<Dispatch<DBAction>>();
-  const snackbarAlertDispatch = useDispatch<Dispatch<snackbarAlertAction>>();
-  const { index, config } = useDBTypedSelector(state => ({
-    index: state.DB[enumDB.index],
-    config: state.DB[enumDB.config]
-  }));
   return (
     <StrictMode>
       <AppBar
@@ -106,18 +132,20 @@ export default function ButtonAppBar (props: ButtonAppBarProps) {
         </IconButton>
         <span
           onClick={() => {
-            const s = prompt('运行单条SQL代码');
-            const sTrim = s?.trim();
-            if (sTrim) {
-              db.transaction(tx => {
-                tx.executeSql(sTrim, []);
-              }, (e) => {
-                console.log(e);
-                snackbarAlertDispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `执行失败, 原因：${e.message}`, [enumSnackbarAlert.severity]: enumSeverity.error } });
-              }, () => {
-                snackbarAlertDispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `${sTrim}\n执行成功`, [enumSnackbarAlert.severity]: enumSeverity.success } });
-              });
-            }
+            copyAction().then(() => {
+              const s = prompt('运行单条SQL代码');
+              const sTrim = s?.trim();
+              if (sTrim) {
+                db.transaction(tx => {
+                  tx.executeSql(sTrim, []);
+                }, (e) => {
+                  console.log(e);
+                  snackbarAlertDispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `执行失败, 原因：${e.message}`, [enumSnackbarAlert.severity]: enumSeverity.error } });
+                }, () => {
+                  snackbarAlertDispatch({ type: enumActionName.OPENTRUE, payload: { [enumSnackbarAlert.alertText]: `${sTrim}\n执行成功`, [enumSnackbarAlert.severity]: enumSeverity.success } });
+                });
+              }
+            });
           }}
         >{(title || id) ?? documentTitle}</span>
         <Button className={classNames(style['Avatar'], { [style['open'] ?? '']: PopoverOpen })}

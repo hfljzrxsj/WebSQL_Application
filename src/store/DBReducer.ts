@@ -2,8 +2,8 @@ import type {
   // RRN_,
   // RRNReactElementGenericity,
   RRNboolean,
+  RRNstring,
   // RRNnumber,
-  // RRNstring
   // anyReactElementGenericity
 } from '@/types';
 import { useSelector, type TypedUseSelectorHook } from 'react-redux';
@@ -15,18 +15,21 @@ export enum enumActionName {
 // eslint-disable-next-line no-shadow
 export enum enumDB {
   config = 'config',
-  index = 'index'
+  index = 'index',
+  TRIGGER = 'TRIGGER'
 }
 interface State {
   // readonly [enumAppBarTitle.title]: RRNstring;
   readonly [enumDB.config]?: DBConfigData;
   readonly [enumDB.index]?: RRNboolean;
+  readonly [enumDB.TRIGGER]?: RRNstring;
 }
 // export type RRNState = RRN_<State>;
 export type DBAction = actionInterface<State, enumActionName>;
 const initialState = {
   [enumDB.config]: [],
   [enumDB.index]: false,
+  [enumDB.TRIGGER]: '',
 },
   // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types, @typescript-eslint/default-param-last, default-param-last
   reducer = (state = initialState, action: DBAction) => {

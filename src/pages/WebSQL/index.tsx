@@ -84,6 +84,7 @@ interface idToNameOne {
 }
 const isVavid = (i: unknown) => i !== null && i !== undefined && i !== '';
 const isTypeNumber = (i: idToNameOne | undefined) => Boolean(i?.type);
+const isTypeNumberToString = (i: Parameters<typeof isTypeNumber>[0], v: string | number | Date) => isTypeNumber(i) ? v : `'${v}'`;
 interface AlertProps {
   readonly severity: AlertColor,
   readonly alertText: string | DOMString;
@@ -145,7 +146,7 @@ export default function WebSQL () {
       if (Array.isArray(v)) return [...pre, `(${k}>=${v[0]}) and (${k}<=${v[1]})`];
       else return [...pre, `${tableName}.${k} ${makeSQLFuzzy[k as keyOfStudent] ?
         `LIKE "%${String(v)}%"` :
-        `= ${isTypeNumber(idToNameRecord[k]) ? v : `"${v}"`}`} `];
+        `= ${isTypeNumberToString(idToNameRecord[k], v)}`} `];
     }, [] as ReadonlyArray<string>).join(
       ' and ').trimEnd();
   //--------------------SQL--------------------
@@ -270,7 +271,8 @@ export default function WebSQL () {
   const { dialogData } = CRUDDialogOpen;
   const WHERE_something = (dialogData: RecordOneRow) => idToNamePrimary.map(cur => {
     const { id } = cur;
-    return `${id}=${dialogData[id]}`;
+    const v = dialogData[id];
+    return `${id}=${isTypeNumberToString(cur, v)}`;
   }).join(' AND ');
   if (loading || idToName.length === 0) {
     return <Skeleton
@@ -528,9 +530,7 @@ export default function WebSQL () {
         }),
         //--------------------SQL--------------------
         modifySQL: ((dialogData) => {
-          console.log(dialogData);
-
-          const SET_something = entries(dialogData).filter(([k]) => idToNameKeys.includes(k as keyOfStudent) && !idToNameRecord[k]?.primary).map(([k, v]) => `${k}=${(!isVavid(v)) ? 'null' : (isTypeNumber(idToNameRecord[k]) ? v : `'${v}'`)}`
+          const SET_something = entries(dialogData).filter(([k]) => idToNameKeys.includes(k as keyOfStudent) && !idToNameRecord[k]?.primary).map(([k, v]) => `${k}=${(!isVavid(v)) ? 'null' : (isTypeNumberToString(idToNameRecord[k], v))}`
           ).join(', ');
           return `UPDATE ${tableName} SET ${SET_something} WHERE ${WHERE_something(dialogData)};`;
         }),
@@ -546,7 +546,7 @@ export default function WebSQL () {
             return '';
           }
           const INSERT_where = hasValue.map(([k]) => k).join(', ');
-          const INSERT_value = hasValue.map(([k, v]) => `${isTypeNumber(idToNameRecord[k]) ? v : `'${v}'`}`).join(', ');
+          const INSERT_value = hasValue.map(([k, v]) => `${isTypeNumberToString(idToNameRecord[k], v)}`).join(', ');
           return `INSERT INTO ${tableName} (${INSERT_where}) VALUES (${INSERT_value});`;
         }),
         //--------------------SQL--------------------

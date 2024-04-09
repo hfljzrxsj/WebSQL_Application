@@ -154,7 +154,7 @@ export default function ButtonAppBar (props: ButtonAppBarProps) {
           }}
         >
           <AccountCircleIcon />
-          <span>HJX, HJX</span>
+          <span>{localStorage.getItem('HJX') ?? 'HJX, HJX'}</span>
           <KeyboardArrowDownIcon />
         </Button>
       </AppBar>
@@ -203,6 +203,8 @@ export default function ButtonAppBar (props: ButtonAppBarProps) {
           fullWidth
           onClick={() => {
             if (confirm('确定要删库跑路吗？')) {
+              clearCache();
+              localStorage.clear();
               config?.map(i => i.children).flat().forEach(id => {
                 runSQL(id, snackbarAlertDispatch, `删${id}库跑路成功! 5秒后自动刷新`);
               });
@@ -222,8 +224,6 @@ export default function ButtonAppBar (props: ButtonAppBarProps) {
         handleClose={handleClose}
         title={`确定要重置${id}表吗？`}
         onClick={() => {
-          clearCache();
-          localStorage.clear();
           runSQL(id ?? '', snackbarAlertDispatch, `重置${id}表成功! 5秒后自动刷新`);
           handleClose();
           // navigate(concatUrl(pathString.login));

@@ -57,7 +57,7 @@ const SelectFromDB = (props: SelectFromDB) => {
       });
   }, [foreignTable, foreignKey]);
   return <FormControl fullWidth {...others}>
-    <InputLabel>{i.name}</InputLabel><Select
+    <InputLabel title={i.id}>{i.name}</InputLabel><Select
       fullWidth
       {...others}
     >
@@ -143,7 +143,7 @@ export default function WebSQL () {
     makeSQLArr.reduce((pre, cur) => {
       const [k, v] = cur;
       if (!isVavid(v)) return pre;
-      if (Array.isArray(v)) return [...pre, `(${k}>=${v[0]}) and (${k}<=${v[1]})`];
+      if (Array.isArray(v)) return [...pre, `(${k} BETWEEN ${v[0]} AND ${v[1]})`];//(${k}>=${v[0]}) and (${k}<=${v[1]})
       else return [...pre, `${tableName}.${k} ${makeSQLFuzzy[k as keyOfStudent] ?
         `LIKE "%${String(v)}%"` :
         `= ${isTypeNumberToString(idToNameRecord[k], v)}`} `];
@@ -295,8 +295,10 @@ export default function WebSQL () {
             const { id } = i;
             return <Paper elevation={24} key={index}
               className={classNames({ [style['last'] ?? '']: i.type === 'between' }) ?? ''}
+              title={id}
             >
               <Checkbox
+                title={id}
                 onChange={(_e, c) => {
                   setMakeSQLRequire({
                     [id]: c
@@ -309,6 +311,7 @@ export default function WebSQL () {
                     return <SelectFromDB
                       fullWidth
                       label={i.name}
+                      title={id}
                       onChange={(e) => {
                         const { target } = e;
                         if ('value' in target) {
@@ -324,8 +327,9 @@ export default function WebSQL () {
                   case 'between': {
                     const arr = makeSQL[id];
                     return <>
-                      <span>{i.name}</span>
+                      <span title={id}>{i.name}</span>
                       <Slider
+                        title={id}
                         min={i.min ?? 0}
                         max={i.max ?? 100}
                         step={i.step ?? 1}
@@ -361,6 +365,7 @@ export default function WebSQL () {
                         // autoFocus
                         aria-autocomplete="both"
                         label={i.name}
+                        title={id}
                         type={i.type === 'number' ? 'number' : "search"}
                         onChange={(e) => {
                           setMakeSQL({
@@ -369,7 +374,8 @@ export default function WebSQL () {
                         }}
                       />
                       <FormControlLabel
-                        control={<Checkbox />}
+                        title={id}
+                        control={<Checkbox title={id} />}
                         label="模糊搜索"
                         onChange={(_e, c) => setMakeSQLFuzzy({
                           [id]: c
@@ -598,7 +604,8 @@ const CRUDDialog = (props: CRUDDialogProps) => {
             key={index}
             i={i}
             {...textFieldProps(v, primary)}
-            label={k}
+            label={i.name}
+            title={k}
             onChange={(e) => {
               const { target } = e;
               if ('value' in target) {
@@ -611,7 +618,8 @@ const CRUDDialog = (props: CRUDDialogProps) => {
           />;
         return <TextField
           aria-autocomplete="both"
-          label={k}
+          label={i.name}
+          title={k}
           type={isNumber ? 'number' : "search"}
           {...textFieldProps(v, primary)}
           key={index}

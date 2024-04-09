@@ -44,6 +44,10 @@
           align-items: center;
           gap: 9q;
           flex: 1;
+
+          span {
+            white-space: nowrap;
+          }
         }
       }
 

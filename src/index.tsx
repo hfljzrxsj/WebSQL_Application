@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import './index.scss';
 import { render } from 'react-dom';
 import App from './App';
+// import './utils/Date';
 // import { register } from './serviceWorkerRegistration';
 // import './mock';
 // import 'virtual:svg-cions-register';

@@ -19,7 +19,7 @@ export default (resolve: () => void = () => { }) =>
           // channel.onmessage = () => {
           const { port1, port2 } = new MessageChannel();
           port1?.postMessage?.(null);
-          port2.onmessage = () => resolve?.();
+          port2.onmessage = resolve;
           // };
         }
         ).catch?.(console?.error)

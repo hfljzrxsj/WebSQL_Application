@@ -133,8 +133,10 @@ export default function WebSQL () {
   const IndexedBy = (index && subtitle === config?.[0]?.path) ? ` INDEXED BY ${tableName}_Index` : '';
   const leftJoin = idToName.filter(i => i.foreignTable).reduce((pre, cur) => {
     const { foreignTable, id } = cur;
-    return pre
-      + `LEFT JOIN ${foreignTable} ON ${tableName}.${id}=${foreignTable}.${id} `;
+    return pre + `LEFT OUTER JOIN ${foreignTable} USING (${id}) `;
+    // return pre + `LEFT OUTER JOIN ${foreignTable} ON ${tableName}.${id}=${foreignTable}.${id} `;
+    // return pre + `NATURAL JOIN ${foreignTable} `;
+    // NATURAL JOIN / LEFT OUTER JOIN
   }, ' ').trimEnd();
   const LimitOFFET = ` LIMIT ${getRowsPerPage()} OFFSET ${getRowsPerPage() * getPage()}`;
   const initSQL = `SELECT * FROM ${tableName}${IndexedBy}${leftJoin}${LimitOFFET};`;
@@ -146,9 +148,9 @@ export default function WebSQL () {
       if (Array.isArray(v)) return [...pre, `(${k} BETWEEN ${v[0]} AND ${v[1]})`];//(${k}>=${v[0]}) and (${k}<=${v[1]})
       else return [...pre, `${tableName}.${k} ${makeSQLFuzzy[k as keyOfStudent] ?
         `LIKE "%${String(v)}%"` :
-        `= ${isTypeNumberToString(idToNameRecord[k], v)}`} `];
+        `= ${isTypeNumberToString(idToNameRecord[k], v)}`}`];
     }, [] as ReadonlyArray<string>).join(
-      ' and ').trimEnd();
+      ' AND ').trimEnd();
   //--------------------SQL--------------------
   const { run: buttonOnClick } = useThrottleFn(useCallback((s = sql) => {
     const arr = s.trim().split(';');
